@@ -1,3 +1,6 @@
+Here’s a revised and complete Readme.md file for your project that you can copy and use:
+
+```markdown
 # Money Script
 
 Money Script is a personal finance management tool designed to help users plan their monthly expenses, track their remaining budget, and generate detailed financial reports in PDF format.
@@ -10,8 +13,8 @@ Money Script is a personal finance management tool designed to help users plan t
 - **Customizable Expense Frequencies**: Supports monthly, weekly, and bi-weekly expense tracking.
 
 ## Project Structure
-
 ```
+
 money_script/
 ├── enhanced_expense_report.pdf # Generated PDF report
 ├── index.js # Main entry point of the application
@@ -32,7 +35,7 @@ money_script/
 └── utils/
 └── pdf-maker.js # Utility for generating PDF reports
 
-```
+````
 
 ## How It Works
 
@@ -49,12 +52,10 @@ money_script/
 ## Installation
 
 1. Clone the repository:
-
-   ```
-   bash
+   ```bash
    git clone <repository-url>
    cd money_script
-   ```
+````
 
 2. Install dependencies:
    ```
