@@ -86,10 +86,6 @@ The generated PDF report includes:
 - Support for additional expense frequencies (e.g., quarterly, yearly).
 - Enhanced debt repayment strategies and recommendations.
 
-## License
-
-This project is licensed under the ISC License.
-
 ## Author
 
 Martin Morel
