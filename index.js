@@ -35,7 +35,7 @@ async function getFileLines(filePath) {
 
 // Ask user for income, frequency, and file name, then get expense lines
 async function collect_info() {
-  let user_income, frequency, expenses_file;
+  let user_income, frequency, expenses_file, file_path;
 
   while (isNaN(Number(user_income))) {
     user_income = await ask_question(
@@ -49,19 +49,19 @@ async function collect_info() {
     );
   }
 
-  while (!expenses_file) {
+  while (true) {
     expenses_file = await ask_question(
       "What is the name of the file with all your expenses?: "
     );
-  }
+    file_path = `user-expenses/${expenses_file}.txt`;
 
-  const file_path = `user-expenses/${expenses_file}.txt`;
-
-  if (!fs.existsSync(file_path)) {
-    console.error(
-      "🚨 File not found. Please make sure the file exists in user-expenses/"
-    );
-    return;
+    if (fs.existsSync(file_path)) {
+      break;
+    } else {
+      console.error(
+        "🚨 File not found. Please make sure the file exists in user-expenses/"
+      );
+    }
   }
 
   const expenseLines = await getFileLines(file_path);
@@ -71,24 +71,46 @@ async function collect_info() {
   console.log(`Pay Frequency: ${frequency} times/month`);
   console.log("Expenses from file:");
   console.log(expenseLines);
+
+  const expenses_obj = expenseLines.map((lines) => parseExpense(lines));
+  console.log(expenses_obj);
+  return expenses_obj;
+}
+function parseExpense(text) {
+  const fields = text.split(",").map((item) => item.trim());
+
+  const expense = {};
+
+  for (const field of fields) {
+    const [rawKey, rawValue] = field.split(": ").map((str) => str.trim());
+
+    let value;
+    switch (rawKey) {
+      case "cost":
+        value = parseFloat(rawValue.replace("$", ""));
+        break;
+      case "dueDate":
+        value = parseInt(rawValue);
+        if (isNaN(value)) {
+          value = rawValue;
+        }
+        break;
+      default:
+        value = rawValue;
+    }
+
+    expense[rawKey] = value;
+  }
+
+  return expense;
 }
 
-collect_info();
+const user_expenses = await collect_info();
 // Get the user income
 const user_pay_check = 1000 * 2;
 
 // Get the user expenses
-const user_expenses = [
-  { name: "rent", cost: 500, frequency: "monthly", dueDate: 1 },
-  { name: "car", cost: 178, frequency: "bi-weekly", dueDate: "wednesday" },
-  { name: "car insurance", cost: 311, frequency: "monthly", dueDate: 15 },
-  { name: "gas", cost: 40, frequency: "weekly", dueDate: "monday" },
-  { name: "haircut", cost: 40, frequency: "bi-weekly", dueDate: "friday" },
-  { name: "phone_bill", cost: 45, frequency: "monthly", dueDate: 5 },
-  { name: "internet", cost: 70, frequency: "monthly", dueDate: 1 },
-  { name: "spotify", cost: 12, frequency: "monthly", dueDate: 20 },
-  { name: "blink fitness", cost: 25, frequency: "monthly", dueDate: 16 },
-];
+
 // Get the user current debt, break down all the debt
 const user_debt = [
   { name: "chase_credit_card", amount: 2600, type: "credit_card" },
@@ -100,5 +122,7 @@ const user_debt = [
 // map of user expenses
 const user_month_planner = month_planner(user_expenses);
 const remaining_money = available_money_monthly(user_expenses, user_pay_check);
+
+console.log(user_month_planner);
 
 // pdf_maker(user_month_planner, remaining_money);
