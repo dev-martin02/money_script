@@ -82,11 +82,66 @@ async function collect_info() {
   return expenses_arr;
 }
 
-const user_expenses = await collect_info();
+// const user_expenses = await collect_info();
+// const user_month_planner = month_planner(user_expenses);
+// const { paycheck_amount } = user_expenses[user_expenses.length - 1];
 
-const user_month_planner = month_planner(user_expenses);
-const { paycheck_amount } = user_expenses[user_expenses.length - 1];
+// const remaining_money = available_money_monthly(user_expenses, paycheck_amount);
 
-const remaining_money = available_money_monthly(user_expenses, paycheck_amount);
+// pdf_maker(user_month_planner, remaining_money); // Will create a plan for the month
 
-pdf_maker(user_month_planner, remaining_money); // Will create a plan for the month
+// Assuming you have your connection details in a separate config file (recommended)
+// For simplicity, I'll include them here, but it's better to keep them separate.
+
+// Function to insert data into the database
+
+// Example usage (assuming you have the JSON data in variables)
+const transactionsData = [
+  {
+    transaction_date: "2025-04-22",
+    description: "Grocery shopping at ShopRite",
+    amount: 55.78,
+    transaction_type: "expense",
+    category_id: 1,
+    payment_method: "Credit Card",
+    notes: "Bought essentials for the week.",
+    receipt_number: "SR-45678",
+    receipt_date: "2025-04-22",
+    store_name: "ShopRite of Paterson",
+    receipt_image_path: "/images/receipts/sr_20250422.jpg",
+  },
+  {
+    transaction_date: "2025-04-21",
+    description: "Monthly rent payment",
+    amount: 1200.0,
+    transaction_type: "expense",
+    category_id: 2,
+    payment_method: "Bank Transfer",
+    notes: "Rent for April.",
+    receipt_number: null,
+    receipt_date: null,
+    store_name: null,
+    receipt_image_path: null,
+  },
+];
+
+const categoriesData = [
+  {
+    category_name: "Groceries",
+    category_type: "expense",
+    description: "Food and household items from supermarkets.",
+  },
+  {
+    category_name: "Rent",
+    category_type: "expense",
+    description: "Monthly housing payment.",
+  },
+];
+// Call the function to insert the data
+insertDataToDatabase(transactionsData, categoriesData)
+  .then(() => {
+    console.log("Insertion process started."); //  Confirmation
+  })
+  .catch((error) => {
+    console.error("Error in main execution:", error);
+  });
