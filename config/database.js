@@ -8,7 +8,7 @@ const dbConfig = {
 };
 let pool;
 
-export async function connectToDatabase() {
+export async function DB_connection() {
   try {
     if (!pool) {
       // Create a connection pool if it doesn't exist

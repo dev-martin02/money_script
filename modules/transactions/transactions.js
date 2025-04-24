@@ -1,10 +1,10 @@
-import { connectToDatabase } from "../../config/database";
+import { DB_connection } from "../../config/database.js";
 
 export async function transactions(transactions) {
   let connection; // Declare connection outside the try block
 
   try {
-    connection = await connectToDatabase();
+    connection = await DB_connection();
     console.log("Connected to the database!");
 
     // 2. Insert Transactions
@@ -32,32 +32,30 @@ export async function transactions(transactions) {
           transaction.store_name,
           transaction.receipt_image_path,
         ];
-
+        if (!transaction.category_id) {
+          throw new Error(`Category is missing! for : ${transaction} `);
+        }
         try {
           const [transactionResult] = await connection.execute(
             transactionInsertQuery,
             transactionValues
           );
           console.log(
-            `Transaction inserted with ID: ${transactionResult.insertId}`
+            `Transaction inserted with ID: ${transactionResult.insertId}` // .insertID will get the ID of the last row you just inserted
           );
         } catch (error) {
           console.error("Error inserting transaction:", error);
-          // Decide how to handle the error:
-          // 1.  Stop the whole process (throw error):  throw error;
-          // 2.  Continue to the next transaction:       (as is)
-          // 3.  Rollback (more complex, requires transactions):  See below
+          throw Error("Transaction couldn't be complete");
         }
       }
     }
-
     console.log("Data insertion complete.");
-    // .insertID will get the ID of the last row you just inserted
   } catch (error) {
     console.error(
       "Error connecting to the database or during insertion:",
       error
     );
+    throw Error(error);
     //  throw error; // Re-throw the error if you want the caller to handle it.
   } finally {
     // Ensure the connection is closed, even if errors occur
@@ -67,6 +65,27 @@ export async function transactions(transactions) {
         console.log("Database connection closed.");
       } catch (closeError) {
         console.error("Error closing database connection:", closeError);
+      }
+    }
+  }
+}
+
+export async function get_transactions() {
+  let connection = await DB_connection();
+  const query = "SELECT * FROM transactions;"; // CHANGE THIS
+
+  try {
+    const [result] = await connection.execute(query);
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  } finally {
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeErr) {
+        console.error("Error closing connection", closeErr);
       }
     }
   }

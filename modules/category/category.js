@@ -1,10 +1,8 @@
-import { connectToDatabase } from "../../config/database";
+import { DB_connection } from "../../config/database.js";
 
-export async function category(categories) {
-  let connection = await connectToDatabase();
-  // 1. Insert Categories (if needed)
-  //    This part assumes you might need to insert categories.  If your categories
-  //    are already in the database, you can skip this part or modify it.
+export async function add_category(categories) {
+  let connection = await DB_connection();
+
   if (categories && categories.length > 0) {
     for (const category of categories) {
       const categoryInsertQuery = `
@@ -36,8 +34,27 @@ export async function category(categories) {
           `Error inserting category "${category.category_name}":`,
           error
         );
-        // Consider if you want to continue inserting other categories or stop.
-        // Here, we continue to the next category.  You might want to throw the error.
+      }
+    }
+  }
+}
+
+export async function get_category() {
+  let connection = await DB_connection();
+  const query = "SELECT * FROM categories;"; // CHANGE THIS
+
+  try {
+    const [result] = await connection.execute(query);
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new Error(error);
+  } finally {
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeErr) {
+        console.error("Error closing connection", closeErr);
       }
     }
   }

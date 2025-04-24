@@ -6,6 +6,12 @@ import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import fs from "node:fs";
 
+// -------------------------------------------------------------------------------------------------
+
+//The app is not working !!!!! FIX THE DATABASE INTERACTION
+
+// -------------------------------------------------------------------------------------------------
+
 // Ask user for input using readline/promises
 async function ask_question(text) {
   const rl = readline.createInterface({ input, output });
@@ -145,3 +151,9 @@ insertDataToDatabase(transactionsData, categoriesData)
   .catch((error) => {
     console.error("Error in main execution:", error);
   });
+
+// -------------------------------------------------------------------------------------------------
+
+//The app is not working !!!!! FIX THE DATABASE INTERACTION
+
+// -------------------------------------------------------------------------------------------------
