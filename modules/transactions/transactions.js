@@ -61,7 +61,7 @@ export async function transactions(transactions) {
     // Ensure the connection is closed, even if errors occur
     if (connection) {
       try {
-        await connection.end();
+        await connection.release();
         console.log("Database connection closed.");
       } catch (closeError) {
         console.error("Error closing database connection:", closeError);
@@ -83,7 +83,7 @@ export async function get_transactions() {
   } finally {
     if (connection) {
       try {
-        await connection.end();
+        await connection.release();
       } catch (closeErr) {
         console.error("Error closing connection", closeErr);
       }

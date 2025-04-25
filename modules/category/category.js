@@ -52,7 +52,7 @@ export async function get_category() {
   } finally {
     if (connection) {
       try {
-        await connection.end();
+        await connection.release();
       } catch (closeErr) {
         console.error("Error closing connection", closeErr);
       }

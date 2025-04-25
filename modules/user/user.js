@@ -18,7 +18,7 @@ export async function create_user(user_info) {
   } finally {
     if (connection) {
       try {
-        await connection.end();
+        await connection.release();
         console.log("Database connection closed.");
       } catch (closeError) {
         console.error("Error closing database connection:", closeError);
@@ -43,7 +43,7 @@ export async function retrieve_user(user_info) {
   } finally {
     if (connection) {
       try {
-        await connection.end();
+        await connection.release();
         console.log("Database connection closed.");
       } catch (closeError) {
         console.error("Error closing database connection:", closeError);
