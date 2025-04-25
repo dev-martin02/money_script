@@ -144,13 +144,13 @@ const categoriesData = [
   },
 ];
 // Call the function to insert the data
-insertDataToDatabase(transactionsData, categoriesData)
-  .then(() => {
-    console.log("Insertion process started."); //  Confirmation
-  })
-  .catch((error) => {
-    console.error("Error in main execution:", error);
-  });
+// insertDataToDatabase(transactionsData, categoriesData)
+//   .then(() => {
+//     console.log("Insertion process started."); //  Confirmation
+//   })
+//   .catch((error) => {
+//     console.error("Error in main execution:", error);
+//   });
 
 // -------------------------------------------------------------------------------------------------
 

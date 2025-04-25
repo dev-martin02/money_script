@@ -1,39 +1,23 @@
 import express from "express";
-import {
-  get_transactions,
-  transactions,
-} from "./modules/transactions/transactions.js";
-import { add_category, get_category } from "./modules/category/category.js";
+import categories_Router from "./routes/categories.js";
+import transactions_Router from "./routes/transactions.js";
+import user_Router from "./routes/user.js";
+import auth_Router from "./routes/auth/auth.js";
 
 const server = express();
 const port = 3000;
 
 server.use(express.json());
 
-server.get("/category", async (req, res) => {
-  const categories = await get_category();
-
-  console.log(categories);
-  res.status(201).json({ message: categories });
-});
-
-server.post("/category", async (req, res) => {
-  const new_category = req.body;
-
-  const response = await add_category(new_category);
-  res.status(201).json({ message: response });
-});
-
-server.get("/transactions", async (req, res) => {
-  const transactions = await get_transactions();
-  res.status(201).json({ message: transactions });
-});
-
-server.post("/transaction", (req, res) => {
-  const transaction_body = req.body;
-  transactions(transaction_body);
-  res.status(200).json({ message: "hello world" });
-});
+let current_user_id; /// assign an id for the current user which is using the app at the moment
+// USER
+server.use(user_Router);
+// CATEGORY
+server.use(categories_Router);
+// TRANSACTION
+server.use(transactions_Router);
+// auth
+server.use(auth_Router);
 
 server.listen(port, () => {
   console.log("the server is running in port 3000");
