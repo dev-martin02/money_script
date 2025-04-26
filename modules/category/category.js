@@ -48,7 +48,7 @@ export async function add_category(categories) {
 
 export async function get_category() {
   let connection;
-  const query = "SELECT  * FROM categories;";
+  const query = "SELECT * FROM categories;";
 
   try {
     connection = await DB_connection();

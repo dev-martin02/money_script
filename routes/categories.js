@@ -4,6 +4,11 @@ const categories_Router = express.Router();
 
 categories_Router
   .route("/category")
+  .all((req, res, next) => {
+    // runs for all HTTP verbs first
+    // think of it as route specific middleware!
+    next();
+  })
   .get(async (req, res) => {
     try {
       const categories = await get_category();
@@ -18,10 +23,16 @@ categories_Router
     }
   })
   .post(async (req, res) => {
-    const new_category = req.body;
+    try {
+      const new_category = req.body;
 
-    const response = await add_category(new_category);
-    res.status(201).json({ message: response });
+      const response = await add_category(new_category);
+      res.status(201).json({ message: response });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Problem on the server, please contact support" });
+    }
   });
 
 export default categories_Router;
