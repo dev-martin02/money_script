@@ -15,9 +15,9 @@ export async function DB_connection() {
       pool = mysql.createPool(dbConfig);
       console.log("Connected to the database pool");
     }
-    return pool; // Return the pool
+    return pool;
   } catch (error) {
     console.error("Error connecting to the database:", error);
-    throw error; // Re-throw the error to be handled by the caller
+    throw error;
   }
 }

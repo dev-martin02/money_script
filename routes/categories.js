@@ -5,10 +5,17 @@ const categories_Router = express.Router();
 categories_Router
   .route("/category")
   .get(async (req, res) => {
-    const categories = await get_category();
-
-    console.log(categories);
-    res.status(201).json({ message: categories });
+    try {
+      const categories = await get_category();
+      if (categories.length === 0 || !categories) {
+        return res.status(404).json({ message: "No categories found." });
+      }
+      res.status(201).json({ message: categories });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Problem on the server, please contact support" });
+    }
   })
   .post(async (req, res) => {
     const new_category = req.body;
