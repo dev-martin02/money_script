@@ -41,7 +41,7 @@ export async function retrieve_user(user_info) {
     console.error(error);
     throw Error("there was an error");
   } finally {
-    if (connection) {
+    if (connection && typeof connection === "function") {
       try {
         await connection.release();
         console.log("Database connection closed.");

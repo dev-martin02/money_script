@@ -8,8 +8,6 @@ const transactions_Router = express.Router();
 transactions_Router
   .route("/transaction")
   .all((req, res, next) => {
-    // runs for all HTTP verbs first
-    // think of it as route specific middleware!
     next();
   })
   .get(async (req, res) => {
