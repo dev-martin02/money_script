@@ -12,6 +12,8 @@ import auth_Router from "./routes/auth/auth.js";
 const server = express();
 const port = 3000;
 
+export const user_id = 1; // for testing only
+
 server.use(cookieParser());
 // Configure sessions (stores session ID in cookie)
 server.use(

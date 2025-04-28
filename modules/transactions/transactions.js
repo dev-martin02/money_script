@@ -6,6 +6,7 @@ export async function add_transactions(transactions) {
   try {
     connection = await DB_connection();
     const transaction_values = transactions.map((value) => [
+      value.user_id, // those this goes like with cookies?
       value.transaction_date,
       value.description,
       value.amount,
@@ -21,12 +22,12 @@ export async function add_transactions(transactions) {
 
     // Create placeholders for mysql statement
     const placeholders = transaction_values
-      .map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
       .join(", ");
 
     const transactionInsertQuery = `
     INSERT INTO transactions (
-      transaction_date, description, amount, transaction_type,
+      user_id, transaction_date, description, amount, transaction_type,
       category_id, payment_method, notes, receipt_number,
       receipt_date, store_name, receipt_image_path
     )
