@@ -8,12 +8,11 @@ auth_Router.route("/login").post(async (req, res) => {
   console.log(response);
   if (response) {
     // !Change this for production
-    res.cookie("userSession", "user-auth-token", {
-      httpOnly: true,
-      secure: false, // Set to FALSE for HTTP (development)
-      sameSite: "lax", // "strict" breaks non-same-origin clients
-      maxAge: 24 * 60 * 60 * 1000,
-      path: "/", // Allow cookie on all routes
+    res.cookie("myCookie", "myValue", {
+      httpOnly: true, // Prevent JavaScript access
+      secure: false, // change this
+      sameSite: "strict", // Prevent cross-site usage
+      maxAge: 60 * 60 * 24 * 7, // 7 days
     });
     res.status(201).json({ message: "Login successful! 🎉", user: response });
   } else {

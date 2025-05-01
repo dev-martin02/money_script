@@ -2,7 +2,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
-
+import cors from "cors";
 // Routes
 import categories_Router from "./routes/categories.js";
 import transactions_Router from "./routes/transactions.js";
@@ -11,6 +11,10 @@ import auth_Router from "./routes/auth/auth.js";
 
 const server = express();
 const port = 3000;
+const corsOptions = {
+  origin: "http://localhost:5173", // Replace with your frontend origin
+  credentials: true,
+};
 
 export const user_id = 1; // for testing only
 
@@ -31,6 +35,7 @@ server.use(
   })
 );
 server.use(express.json());
+server.use(cors(corsOptions));
 
 // USER
 server.use(user_Router);

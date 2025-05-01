@@ -60,7 +60,7 @@ const user_expenses = [
 ];
 const user_paycheck = 1000;
 
-function create_budgeting_plan(params) {
+export function create_budgeting_plan(params) {
   // PARAMS -> EXPENSES LIST, USER INCOME (PAY CHECK)
   // user_expenses -> list of json array
   const month_plan = month_planner(user_expenses);
