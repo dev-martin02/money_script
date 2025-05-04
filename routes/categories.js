@@ -1,14 +1,11 @@
 import express from "express";
 import { get_category, add_category } from "../modules/category/category.js";
+import { check_user } from "../middleware/checkUser.js";
 const categories_Router = express.Router();
 
 categories_Router
-  .route("/category")
-  .all((req, res, next) => {
-    // runs for all HTTP verbs first
-    // think of it as route specific middleware!
-    next();
-  })
+  .route("/categories")
+  .all(check_user)
   .get(async (req, res) => {
     try {
       const categories = await get_category();

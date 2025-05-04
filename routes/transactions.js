@@ -6,7 +6,7 @@ import {
 const transactions_Router = express.Router();
 
 transactions_Router
-  .route("/transaction")
+  .route("/transactions")
   .all((req, res, next) => {
     next();
   })

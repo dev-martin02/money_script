@@ -1,12 +1,12 @@
 import { DB_connection } from "../../config/database.js";
 
 export async function add_transactions(transactions) {
-  let connection; // Declare connection outside the try block
+  let connection;
 
   try {
     connection = await DB_connection();
     const transaction_values = transactions.map((value) => [
-      value.user_id, // those this goes like with cookies?
+      value.user_id,
       value.transaction_date,
       value.description,
       value.amount,

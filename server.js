@@ -30,7 +30,7 @@ server.use(
       secure: false, // Set to `true` if using HTTPS (always in production)
       httpOnly: true, // Block JavaScript access
       maxAge: 24 * 60 * 60 * 1000, // 1 day
-      sameSite: "strict", // Prevent CSRF
+      // sameSite: "strict", // Prevent CSRF what is this?
     },
   })
 );
