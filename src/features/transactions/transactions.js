@@ -4,6 +4,7 @@ export async function add_transactions(transactions) {
   let connection;
 
   try {
+    console.log(transactions);
     connection = await DB_connection();
     const transaction_values = transactions.map((value) => [
       value.user_id,

@@ -1,7 +1,7 @@
 import {
   find_day,
   month_dates,
-} from "../../../utils/month-calculation/month.js";
+} from "../../../../utils/month-calculation/month.js";
 
 // Makes a map of all your expenses for the month
 export function month_planner(user_expenses) {

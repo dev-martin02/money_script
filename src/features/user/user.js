@@ -1,4 +1,4 @@
-import { DB_connection } from "../../config/database.js";
+import { DB_connection } from "../../../config/database.js";
 
 // Create user
 export async function create_user(user_info) {

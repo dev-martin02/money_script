@@ -1,8 +1,7 @@
-import { DB_connection } from "../config/database.js";
+import { DB_connection } from "../database.js";
 
 export async function check_user(req, res, next) {
   const session_id = req.session;
-  console.log(session_id);
 
   // Check if session and user_id exist
   if (!session_id || !session_id.user_id) {
@@ -41,7 +40,7 @@ export async function check_user(req, res, next) {
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     // Ensure the database connection is released
-    if (connection) {
+    if (connection && typeof connection === "function") {
       try {
         await connection.release();
       } catch (releaseError) {
