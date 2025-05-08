@@ -1,4 +1,4 @@
-import { DB_connection } from "../../config/database.js";
+import { DB_connection } from "../../shared/database.js";
 
 export async function add_category(categories) {
   if (categories.length === 0 || !categories) {

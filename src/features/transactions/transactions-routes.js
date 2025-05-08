@@ -5,7 +5,7 @@ import {
   weekly_monthly,
   weekly_yearly,
 } from "./calculations.js";
-import { check_user } from "../middleware/checkUser.js";
+import { check_user } from "../../shared/middleware/checkUser.js";
 const transactions_Router = express.Router();
 
 transactions_Router

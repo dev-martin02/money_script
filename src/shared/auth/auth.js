@@ -1,5 +1,5 @@
 import express from "express";
-import { retrieve_user } from "../../modules/user/user.js";
+import { retrieve_user } from "../../features/user/user.js";
 
 const auth_Router = express.Router();
 

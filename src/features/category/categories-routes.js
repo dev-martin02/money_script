@@ -1,6 +1,6 @@
 import express from "express";
 import { get_category, add_category } from "./category.js";
-import { check_user } from "../middleware/checkUser.js";
+import { check_user } from "../../shared/middleware/checkUser.js";
 const categories_Router = express.Router();
 
 categories_Router

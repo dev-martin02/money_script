@@ -3,12 +3,12 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import session from "express-session";
 import cors from "cors";
-import categories_Router from "./src/features/category/categories-routes";
-import transactions_Router from "./src/features/transactions/transactions-routes";
+import categories_Router from "./src/features/category/categories-routes.js";
+import transactions_Router from "./src/features/transactions/transactions-routes.js";
 // Routes
 
-import user_Router from "./src/features/user/user-routes";
-import auth_Router from "./";
+import user_Router from "./src/features/user/user-routes.js";
+import auth_Router from "./src/shared/auth/auth.js";
 
 const server = express();
 const port = 3000;

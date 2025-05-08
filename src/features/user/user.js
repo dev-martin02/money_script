@@ -1,5 +1,5 @@
-import { DB_connection } from "../../../config/database.js";
-
+// import { DB_connection } from "../../../config/database.js";
+import { DB_connection } from "../../shared/database.js";
 // Create user
 export async function create_user(user_info) {
   // Get personal Info -> name + email + password
