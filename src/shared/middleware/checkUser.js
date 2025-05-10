@@ -22,7 +22,6 @@ export async function check_user(req, res, next) {
 
     if (rows.length > 0) {
       req.user = rows[0];
-      console.log("User found in session:", rows[0]);
       return next();
     } else {
       console.log("User ID in session is invalid.");

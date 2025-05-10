@@ -3,8 +3,8 @@ import { DB_connection } from "../../shared/database.js";
 export async function add_transactions(transactions) {
   let connection;
 
+  console.log(transactions);
   try {
-    console.log(transactions);
     connection = await DB_connection();
     const transaction_values = transactions.map((value) => [
       value.user_id,
@@ -59,9 +59,17 @@ export async function add_transactions(transactions) {
   }
 }
 
-export async function get_transactions() {
+export async function get_transactions(user_id) {
   let connection;
-  const query = "SELECT * FROM transactions;"; // CHANGE THIS
+  const query = `SELECT 
+    amount,
+    store_name,
+    transaction_date,
+    description,
+    payment_method,
+    category_id
+    FROM transactions
+    WHERE user_id = ?;`;
 
   try {
     connection = await DB_connection();
@@ -69,7 +77,7 @@ export async function get_transactions() {
       throw new Error("Failed to establish database connection.");
     }
 
-    const [result] = await connection.execute(query);
+    const [result] = await connection.execute(query, [user_id]);
     return result;
   } catch (error) {
     console.error("Error in get_transactions", error);

@@ -11,9 +11,11 @@ const transactions_Router = express.Router();
 transactions_Router
   .route("/transactions")
   .all(check_user)
-  .get(async (req, res) => {
+  .get(async (req, res, next) => {
+    const user = req.user.user_id;
+
     try {
-      const transactions = await get_transactions();
+      const transactions = await get_transactions(user);
       res.status(201).json({ message: transactions });
     } catch (error) {
       res
@@ -23,14 +25,14 @@ transactions_Router
   })
   .post(async (req, res, next) => {
     try {
-      const transaction_body = req.body;
+      const transaction_body = [req.body];
       const user = req.user.user_id;
-      const transaction_info = transaction_body.unshift(user);
-      const response = await add_transactions(transaction_info);
+      const response = await add_transactions(transaction_body);
+      console.log(response);
       res.status(200).json({ message: response });
     } catch (error) {
       res
-        .status(500)
+        .status(400)
         .json({ message: "Problem on the server, please contact support" });
     }
   });

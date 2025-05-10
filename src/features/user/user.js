@@ -35,7 +35,7 @@ export async function retrieve_user(user_info) {
   try {
     connection = await DB_connection();
     const [result] = await connection.execute(query, [email, password]);
-    console.log(result);
+
     return result;
   } catch (error) {
     console.error(error);
