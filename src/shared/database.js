@@ -1,23 +1,53 @@
 import mysql from "mysql2/promise";
 
+// Database configuration with fallback values
 const dbConfig = {
-  host: "localhost",
-  user: "root",
-  password: "1234",
-  database: "money_script",
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "1234",
+  database: process.env.DB_NAME || "money_script",
 };
-let pool;
+
+export class DatabaseError extends Error {
+  constructor(message, originalError = null) {
+    super(message);
+    this.name = "DatabaseError";
+    this.originalError = originalError;
+  }
+}
 
 export async function DB_connection() {
   try {
-    if (!pool) {
-      // Create a connection pool if it doesn't exist
-      pool = mysql.createPool(dbConfig);
-      console.log("Connected to the database pool");
-    }
-    return pool;
+    const connection = await mysql.createConnection(dbConfig);
+    return connection;
   } catch (error) {
-    console.error("Error connecting to the database:", error);
-    throw error;
+    throw new DatabaseError("Failed to establish database connection", error);
+  }
+}
+
+export async function withConnection(operation) {
+  let connection;
+  try {
+    connection = await DB_connection();
+    if (!connection) {
+      throw new DatabaseError("Connection object is null or undefined");
+    }
+    return await operation(connection);
+  } catch (error) {
+    console.error("Database operation error:", error);
+
+    if (error instanceof DatabaseError) {
+      throw error;
+    }
+
+    throw new DatabaseError("Database operation failed", error);
+  } finally {
+    if (connection) {
+      try {
+        if (typeof connection === "function") await connection.release();
+      } catch (closeError) {
+        console.error("Error closing database connection:", closeError);
+      }
+    }
   }
 }

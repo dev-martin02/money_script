@@ -12,27 +12,31 @@ transactions_Router
   .route("/transactions")
   .all(check_user)
   .get(async (req, res, next) => {
-    const user = req.user.user_id;
+    const user = req.session.user_id;
 
     try {
+      console.log("hola padre");
       const transactions = await get_transactions(user);
+      console.log(transactions);
       res.status(201).json({ message: transactions });
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Problem on the server, please contact support" });
+      res.status(500).json({
+        message: ["Problem on the server, please contact support"],
+        error,
+      });
     }
   })
   .post(async (req, res, next) => {
     try {
-      const transaction_body = [req.body];
+      const transaction_body = req.body;
       const user = req.user.user_id;
-      const response = await add_transactions(transaction_body);
-      console.log(response);
+      transaction_body["user_id"] = user;
+
+      const response = await add_transactions([transaction_body]);
       res.status(200).json({ message: response });
     } catch (error) {
       res
-        .status(400)
+        .status(500)
         .json({ message: "Problem on the server, please contact support" });
     }
   });

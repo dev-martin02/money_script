@@ -14,9 +14,13 @@ categories_Router
       }
       res.status(201).json({ message: categories });
     } catch (error) {
+      console.log(error);
       res
         .status(500)
-        .json({ message: "Problem on the server, please contact support" });
+        .json({
+          message: "Problem on the server, please contact support",
+          error,
+        });
     }
   })
   .post(async (req, res) => {

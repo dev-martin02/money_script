@@ -7,3 +7,11 @@ name: amazon prime, cost: $14, frequency: monthly, dueDate: 25
 name: student loan, cost: $200, frequency: monthly, dueDate: 28
 name: water bill, cost: $50, frequency: monthly, dueDate: 10
 name: apple music, cost: $11, frequency: monthly, dueDate: 22
+
+
+const dbConfig = {
+  host: "localhost",
+  user: "root",
+  password: "1234",
+  database: "money_script",
+};
