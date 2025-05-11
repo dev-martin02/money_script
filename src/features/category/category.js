@@ -9,8 +9,10 @@ export async function add_category(categories) {
   const categories_values = categories.map((values) => [
     values.user_id,
     values.category_name,
-    values.category_type,
+    values.transaction_type,
     values.description,
+    values.icon,
+    values.color,
   ]);
 
   let connection;
@@ -19,18 +21,19 @@ export async function add_category(categories) {
     connection = await DB_connection();
 
     // This will make enough ? for each category that is being place
-    const placeholders = categories_values.map(() => "(?, ?, ?, ?)").join(", ");
+    const placeholders = categories_values
+      .map(() => "(?, ?, ?, ?, ?, ?)")
+      .join(", ");
 
     const categoryInsertQuery = `
-    INSERT INTO categories (user_id, category_name, category_type, description)
+    INSERT INTO categories (user_id, category_name, transaction_type, description, icon, color)
     VALUES ${placeholders}`;
 
-    // Flatten the array of values to make it only 1
-    const flattenedValues = categories_values.flat();
+    console.log(categories_values);
 
     const [result] = await connection.query(
       categoryInsertQuery,
-      flattenedValues
+      categories_values.flat()
     );
     return `Inserted or updated ${result.affectedRows} categories`;
   } catch (error) {

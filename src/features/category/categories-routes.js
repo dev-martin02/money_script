@@ -15,19 +15,20 @@ categories_Router
       res.status(201).json({ message: categories });
     } catch (error) {
       console.log(error);
-      res
-        .status(500)
-        .json({
-          message: "Problem on the server, please contact support",
-          error,
-        });
+      res.status(500).json({
+        message: "Problem on the server, please contact support",
+        error,
+      });
     }
   })
   .post(async (req, res) => {
     try {
-      const new_category = req.body;
+      const category_body = req.body;
+      const user = req.session.user_id;
 
-      const response = await add_category(new_category);
+      category_body["user_id"] = user;
+      console.log(user);
+      const response = await add_category([category_body]);
       res.status(201).json({ message: response });
     } catch (error) {
       res

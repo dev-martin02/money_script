@@ -9,7 +9,8 @@ auth_Router.route("/login").post(async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required",
+        success: false,
+        message: "Please provide both email and password",
       });
     }
 
@@ -17,12 +18,10 @@ auth_Router.route("/login").post(async (req, res) => {
 
     if (response.length > 0) {
       const user = response[0];
-
       req.session.user_id = user.user_id;
 
-      console.log(req.session.user_id);
-      // Send user data in response
       res.status(200).json({
+        success: true,
         message: "Login successful! 🎉",
         user: {
           id: user.id,
@@ -32,13 +31,16 @@ auth_Router.route("/login").post(async (req, res) => {
       });
     } else {
       res.status(401).json({
-        message: "Invalid email or password ❌",
+        success: false,
+        message: "Invalid email or password. Please try again.",
       });
     }
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
-      message: "An error occurred during login",
+    res.status(401).json({
+      success: false,
+      message:
+        "Invalid email or password. Please check your credentials and try again.",
     });
   }
 });
@@ -49,10 +51,12 @@ auth_Router.route("/logout").post((req, res) => {
     if (err) {
       console.error("Logout error:", err);
       return res.status(500).json({
+        success: false,
         message: "Error during logout",
       });
     }
     res.status(200).json({
+      success: true,
       message: "Logged out successfully",
     });
   });

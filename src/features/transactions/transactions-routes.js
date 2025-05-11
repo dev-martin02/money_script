@@ -15,9 +15,8 @@ transactions_Router
     const user = req.session.user_id;
 
     try {
-      console.log("hola padre");
       const transactions = await get_transactions(user);
-      console.log(transactions);
+
       res.status(201).json({ message: transactions });
     } catch (error) {
       res.status(500).json({

@@ -34,13 +34,10 @@ export async function withConnection(operation) {
     }
     return await operation(connection);
   } catch (error) {
-    console.error("Database operation error:", error);
-
     if (error instanceof DatabaseError) {
       throw error;
     }
-
-    throw new DatabaseError("Database operation failed", error);
+    throw error;
   } finally {
     if (connection) {
       try {

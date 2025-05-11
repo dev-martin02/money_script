@@ -109,7 +109,6 @@ export async function get_transactions(user_id) {
     `;
     return await withConnection(async (connection) => {
       const [result] = await connection.execute(query, [user_id]);
-      console.log(result);
       return result;
     });
   } catch (error) {
