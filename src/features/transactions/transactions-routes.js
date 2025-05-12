@@ -28,7 +28,7 @@ transactions_Router
   .post(async (req, res, next) => {
     try {
       const transaction_body = req.body;
-      const user = req.user.user_id;
+      const user = req.session.user_id;
       transaction_body["user_id"] = user;
 
       const response = await add_transactions([transaction_body]);
@@ -46,8 +46,8 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user_id = req.user.user_id;
-      const data = await weekly_expenses(user_id);
+      const user = req.session.user_id;
+      const data = await weekly_expenses(user);
       res.status(200).json({ message: data });
     } catch (error) {
       res
@@ -62,8 +62,8 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user_id = req.user.user_id;
-      const data = await weekly_monthly(user_id);
+      const user = req.session.user_id;
+      const data = await weekly_monthly(user);
       res.status(200).json({ message: data });
     } catch (error) {
       res
@@ -78,8 +78,8 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user_id = req.user.user_id;
-      const data = await weekly_yearly(user_id);
+      const user = req.session.user_id;
+      const data = await weekly_yearly(user);
       res.status(200).json({ message: data });
     } catch (error) {
       console.log(error);

@@ -8,13 +8,15 @@ categories_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const categories = await get_category();
+      const user = req.session.user_id;
+
+      const categories = await get_category(user);
       if (categories.length === 0 || !categories) {
         return res.status(404).json({ message: "No categories found." });
       }
       res.status(201).json({ message: categories });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       res.status(500).json({
         message: "Problem on the server, please contact support",
         error,
@@ -35,6 +37,10 @@ categories_Router
         .status(500)
         .json({ message: "Problem on the server, please contact support" });
     }
+  })
+  .put(async (req, res) => {
+    const category_body = req.body;
+    console.log(category_body);
   });
 
 export default categories_Router;

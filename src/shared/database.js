@@ -37,6 +37,7 @@ export async function withConnection(operation) {
     if (error instanceof DatabaseError) {
       throw error;
     }
+    console.log("dsd:", error);
     throw error;
   } finally {
     if (connection) {
