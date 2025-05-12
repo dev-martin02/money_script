@@ -1,3 +1,4 @@
+import e from "express";
 import { withConnection } from "../../shared/database.js";
 
 export async function add_category(categories) {
@@ -25,7 +26,7 @@ export async function add_category(categories) {
     VALUES ${placeholders}`;
 
     return await withConnection(async (connection) => {
-      const [result] = await connection.query(
+      const [result] = await connection.execute(
         categoryInsertQuery,
         categories_values.flat()
       );
@@ -38,15 +39,6 @@ export async function add_category(categories) {
   }
 }
 
-const category_table = [
-  "category_id",
-  "category_name",
-  "color",
-  "description",
-  "icon",
-  "transaction_type",
-];
-
 export async function get_category(user) {
   const query =
     "SELECT category_id, category_name, color, description, transaction_type, icon FROM categories WHERE user_id = ?;";
@@ -54,7 +46,6 @@ export async function get_category(user) {
   try {
     return await withConnection(async (connection) => {
       const [result] = await connection.execute(query, [user]);
-      console.log(result);
       return result;
     });
   } catch (error) {
@@ -63,9 +54,43 @@ export async function get_category(user) {
 }
 
 export async function update_category(category_body) {
-  const query = `UPDATE category
+  const categories_values = [
+    category_body.category_name,
+    category_body.icon,
+    category_body.color,
+    category_body.description,
+    category_body.transaction_type,
+    category_body.user_id,
+    category_body.category_id,
+  ];
+
+  const query = `UPDATE categories
   SET category_name = ?, icon = ?, color = ?, description = ?, transaction_type = ? 
   WHERE user_id = ? AND category_id = ?;`;
-  let user_id, categories_id;
-  // for(let i = 0; i < category_body.length)
+
+  try {
+    return await withConnection(async (connection) => {
+      const [result] = await connection.execute(query, categories_values);
+      return { success: true, insertedCount: result.affectedRows };
+    });
+  } catch (error) {
+    throw Error("Failed to update categories", error);
+  }
+}
+
+export async function delete_category(category_body) {
+  const query =
+    "DELETE  FROM categories WHERE user_id = ? AND category_id = ?;";
+
+  try {
+    return await withConnection(async (connection) => {
+      const [result] = await connection.execute(query, [
+        category_body.user_id,
+        category_body.category_id,
+      ]);
+      return { success: true, insertedCount: result.affectedRows };
+    });
+  } catch (error) {
+    throw Error("Failed to get categories", error);
+  }
 }

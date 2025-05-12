@@ -1,5 +1,10 @@
 import express from "express";
-import { get_category, add_category } from "./category.js";
+import {
+  get_category,
+  add_category,
+  update_category,
+  delete_category,
+} from "./category.js";
 import { check_user } from "../../shared/middleware/checkUser.js";
 const categories_Router = express.Router();
 
@@ -39,8 +44,33 @@ categories_Router
     }
   })
   .put(async (req, res) => {
-    const category_body = req.body;
-    console.log(category_body);
+    try {
+      const category_body = req.body;
+      const user = req.session.user_id;
+      category_body["user_id"] = user;
+      const response = await update_category(category_body);
+
+      res.status(201).json({ message: response });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Problem on the server, please contact support" });
+    }
+  })
+  .delete(async (req, res) => {
+    try {
+      const category_body = req.body;
+      const user = req.session.user_id;
+      category_body["user_id"] = user;
+
+      const response = await delete_category(category_body);
+
+      res.status(201).json({ message: response });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Problem on the server, please contact support" });
+    }
   });
 
 export default categories_Router;
