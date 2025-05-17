@@ -70,6 +70,28 @@ export async function retrieve_user(user_info) {
     throw new UserError("Failed to retrieve user", error);
   }
 }
+export async function retrieve_user_by_id(user_id) {
+  try {
+    if (!user_id && typeof user_id === "number") {
+      throw new UserError("Needs to have an user id");
+    }
+
+    const query = `SELECT name, email FROM users WHERE user_id = ?`;
+
+    return await withConnection(async (connection) => {
+      const [result] = await connection.execute(query, [user_id]);
+      if (result.length === 0) {
+        throw new UserError("User is don't exist!");
+      }
+      return result;
+    });
+  } catch (error) {
+    if (error instanceof UserError || error instanceof DatabaseError) {
+      throw error;
+    }
+    throw new UserError("Failed to retrieve user", error);
+  }
+}
 
 // Update user
 // Delete user

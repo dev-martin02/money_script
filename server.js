@@ -17,8 +17,6 @@ const corsOptions = {
   credentials: true,
 };
 
-export const user_id = 1; // for testing only
-
 server.use(cookieParser());
 // Configure sessions (stores session ID in cookie)
 server.use(
