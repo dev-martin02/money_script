@@ -2,7 +2,6 @@ import { withConnection } from "../database.js";
 
 export async function check_user(req, res, next) {
   const session = req.session;
-  console.log(session);
 
   // Check if session and user_id exist
   if (!session || !session.user_id) {

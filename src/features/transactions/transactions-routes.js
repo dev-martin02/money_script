@@ -1,44 +1,21 @@
 import express from "express";
-import { get_transactions, add_transactions } from "./transactions.js";
 import {
   weekly_expenses,
   weekly_monthly,
   weekly_yearly,
 } from "./calculations.js";
 import { check_user } from "../../shared/middleware/checkUser.js";
+import {
+  get_transactions,
+  submit_transaction,
+} from "./transactions-controllers.js";
 const transactions_Router = express.Router();
 
 transactions_Router
   .route("/transactions")
   .all(check_user)
-  .get(async (req, res, next) => {
-    const user = req.session.user_id;
-
-    try {
-      const transactions = await get_transactions(user);
-
-      res.status(201).json({ message: transactions });
-    } catch (error) {
-      res.status(500).json({
-        message: ["Problem on the server, please contact support"],
-        error,
-      });
-    }
-  })
-  .post(async (req, res, next) => {
-    try {
-      const transaction_body = req.body;
-      const user = req.session.user_id;
-      transaction_body["user_id"] = user;
-
-      const response = await add_transactions([transaction_body]);
-      res.status(200).json({ message: response });
-    } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Problem on the server, please contact support" });
-    }
-  });
+  .get(get_transactions)
+  .post(submit_transaction);
 
 // ✅ New route: Total income/expense this month
 transactions_Router

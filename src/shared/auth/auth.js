@@ -53,18 +53,22 @@ auth_Router.route("/me").get(check_user, async (req, res) => {
   const userCookie = req.session.user_id;
   const response = await retrieve_user_by_id(userCookie);
 
-  if (response.length > 0) {
-    const user = response[0];
-    req.session.user_id = user.user_id;
+  try {
+    if (response.length > 0) {
+      const user = response[0];
+      req.session.user_id = userCookie;
 
-    res.status(200).json({
-      success: true,
-      message: "Login successful! 🎉",
-      user: {
-        name: user.name,
-        email: user.email,
-      },
-    });
+      res.status(200).json({
+        success: true,
+        message: "Login successful! 🎉",
+        user: {
+          name: user.name,
+          email: user.email,
+        },
+      });
+    }
+  } catch (error) {
+    console.log(error);
   }
 });
 

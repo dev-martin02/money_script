@@ -18,3 +18,11 @@ export class BadRequestError extends ApiError {
     super(400, message);
   }
 }
+
+export class DatabaseError extends Error {
+  constructor(message, originalError = null) {
+    super(message);
+    this.name = "DatabaseError";
+    this.originalError = originalError;
+  }
+}
