@@ -8,8 +8,8 @@ export async function add_category(categories) {
 
   const categories_values = categories.map((values) => [
     values.user_id,
-    values.category_name,
-    values.transaction_type,
+    values.name,
+    values.type,
     values.description,
     values.icon,
     values.color,
@@ -22,16 +22,15 @@ export async function add_category(categories) {
       .join(", ");
 
     const categoryInsertQuery = `
-    INSERT INTO categories (user_id, category_name, transaction_type, description, icon, color)
+    INSERT INTO categories (user_id, name, type, description, icon, color)
     VALUES ${placeholders}`;
 
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(
+      const result = await connection.runAsync(
         categoryInsertQuery,
         categories_values.flat()
       );
-
-      return { success: true, insertedCount: result.affectedRows };
+      return { success: true, insertedCount: result.changes };
     });
   } catch (error) {
     console.error("Error inserting categories:", error);
@@ -41,11 +40,11 @@ export async function add_category(categories) {
 
 export async function get_category(user) {
   const query =
-    "SELECT category_id, category_name, color, description, transaction_type, icon FROM categories WHERE user_id = ?;";
+    "SELECT id, name, type, description, icon, color FROM categories WHERE user_id = ?;";
 
   try {
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, [user]);
+      const result = await connection.allAsync(query, [user]);
       return result;
     });
   } catch (error) {
@@ -55,23 +54,23 @@ export async function get_category(user) {
 
 export async function update_category(category_body) {
   const categories_values = [
-    category_body.category_name,
+    category_body.name,
     category_body.icon,
     category_body.color,
     category_body.description,
-    category_body.transaction_type,
-    category_body.user_id,
-    category_body.category_id,
+    category_body.type,
+    category_body.id,
+    category_body.id,
   ];
 
   const query = `UPDATE categories
-  SET category_name = ?, icon = ?, color = ?, description = ?, transaction_type = ? 
-  WHERE user_id = ? AND category_id = ?;`;
+  SET name = ?, icon = ?, color = ?, description = ?, type = ? 
+  WHERE id = ? AND id = ?;`;
 
   try {
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, categories_values);
-      return { success: true, insertedCount: result.affectedRows };
+      const result = await connection.runAsync(query, categories_values);
+      return { success: true, insertedCount: result.changes };
     });
   } catch (error) {
     throw Error("Failed to update categories", error);
@@ -79,18 +78,17 @@ export async function update_category(category_body) {
 }
 
 export async function delete_category(category_body) {
-  const query =
-    "DELETE  FROM categories WHERE user_id = ? AND category_id = ?;";
+  const query = "DELETE FROM categories WHERE id = ? AND id = ?;";
 
   try {
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, [
-        category_body.user_id,
+      const result = await connection.runAsync(query, [
+        category_body.id,
         category_body.category_id,
       ]);
-      return { success: true, insertedCount: result.affectedRows };
+      return { success: true, insertedCount: result.changes };
     });
   } catch (error) {
-    throw Error("Failed to get categories", error);
+    throw Error("Failed to delete category", error);
   }
 }

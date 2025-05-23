@@ -11,11 +11,10 @@ function validateTransactionFields(transaction) {
   const requiredFields = [
     "user_id",
     "transaction_date",
-    "description",
     "amount",
     "transaction_type",
     "category_id",
-    "payment_method",
+    "method",
   ];
 
   for (const field of requiredFields) {
@@ -23,6 +22,8 @@ function validateTransactionFields(transaction) {
       throw new BadRequestError(`Missing required field: ${field}`);
     }
   }
+
+  transaction.amount = Number(transaction.amount); // modify the string to be a number
 
   if (typeof transaction.amount !== "number" || isNaN(transaction.amount)) {
     throw new BadRequestError("Amount must be a valid number");
@@ -47,6 +48,7 @@ export async function submit_transaction(req, res) {
 
     transaction_arr.forEach(validateTransactionFields);
 
+    console.log(transaction_arr.length);
     const response = await add_transactions(transaction_arr);
 
     res.status(200).json({ message: response });
@@ -60,16 +62,16 @@ export async function submit_transaction(req, res) {
 
 export async function get_transactions(req, res) {
   try {
-    const user_id = req.session.user_id;
+    const id = req.session.user_id;
 
-    if (!user_id) {
+    if (!id) {
       throw new BadRequestError("User ID is required");
     }
-    if (typeof user_id !== "number" && isNaN(user_id)) {
+    if (typeof id !== "number" && isNaN(id)) {
       throw new NotFoundError("Invalid User ID");
     }
 
-    const response = await get_transactions_records(user_id);
+    const response = await get_transactions_records(id);
     res.status(200).json({ message: response });
   } catch (error) {
     if (

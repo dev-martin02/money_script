@@ -17,9 +17,11 @@ categories_Router
 
       const categories = await get_category(user);
       if (categories.length === 0 || !categories) {
-        return res.status(404).json({ message: "No categories found." });
+        return res
+          .status(200)
+          .json({ message: "No categories found.", data: [] });
       }
-      res.status(201).json({ message: categories });
+      res.status(201).json({ message: "Categories of user", data: categories });
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -46,8 +48,8 @@ categories_Router
   .put(async (req, res) => {
     try {
       const category_body = req.body;
-      const user = req.session.user_id;
-      category_body["user_id"] = user;
+      const user = req.session.id;
+      category_body["id"] = user;
       const response = await update_category(category_body);
 
       res.status(201).json({ message: response });
@@ -60,8 +62,8 @@ categories_Router
   .delete(async (req, res) => {
     try {
       const category_body = req.body;
-      const user = req.session.user_id;
-      category_body["user_id"] = user;
+      const user = req.session.id;
+      category_body["id"] = user;
 
       const response = await delete_category(category_body);
 

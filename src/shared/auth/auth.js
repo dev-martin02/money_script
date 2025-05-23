@@ -4,6 +4,7 @@ import {
   retrieve_user_by_id,
 } from "../../features/user/user.js";
 import { check_user } from "../middleware/checkUser.js";
+import { saveSession, removeSession, getSession } from "../../utils/cache.js";
 
 const auth_Router = express.Router();
 
@@ -23,13 +24,21 @@ auth_Router.route("/login").post(async (req, res) => {
 
     if (response.length > 0) {
       const user = response[0];
-      req.session.user_id = user.user_id;
+
+      req.session.user_id = user.id;
+      // Save session to cache
+      await saveSession(req.session.id, {
+        userId: user.id,
+        email: user.email,
+        username: user.username,
+        createdAt: new Date().toISOString(),
+      });
 
       res.status(200).json({
         success: true,
         message: "Login successful! 🎉",
         user: {
-          name: user.name,
+          name: user.username,
           email: user.email,
         },
       });
@@ -50,30 +59,40 @@ auth_Router.route("/login").post(async (req, res) => {
 });
 
 auth_Router.route("/me").get(check_user, async (req, res) => {
-  const userCookie = req.session.user_id;
-  const response = await retrieve_user_by_id(userCookie);
+  const sessionId = req.session.id;
+  const cachedSession = await getSession();
+
+  if (!cachedSession) {
+    return res.status(401).json({
+      success: false,
+      message: "Session not found",
+    });
+  }
 
   try {
-    if (response.length > 0) {
-      const user = response[0];
-      req.session.user_id = userCookie;
+    const response = await retrieve_user_by_id(cachedSession.userId);
+    const user = response;
+    console.log(user);
 
-      res.status(200).json({
-        success: true,
-        message: "Login successful! 🎉",
-        user: {
-          name: user.name,
-          email: user.email,
-        },
-      });
-    }
+    req.session.user_id = response.userId;
+    res.status(200).json({
+      success: true,
+      message: "Login successful! 🎉",
+      user: {
+        name: user.username,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.log(error);
   }
 });
 
 // Add logout route
-auth_Router.route("/logout").post((req, res) => {
+auth_Router.route("/logout").post(async (req, res) => {
+  // Remove session from cache
+  await removeSession(req.session.id);
+
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout error:", err);

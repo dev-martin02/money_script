@@ -1,0 +1,34 @@
+{
+  "sessions": {
+    "om6ULnZ8mKgoLbsSh8xBgVPmX1y5bXPW": {
+      "userId": 1,
+      "email": "test@gmail.com",
+      "username": "Martin",
+      "createdAt": "2025-05-23T23:14:34.269Z"
+    },
+    "xnp2RmSHxeMNs0Nu_p0Qp9CHuyvjqeD8": {
+      "userId": 1,
+      "email": "test@gmail.com",
+      "username": "Martin",
+      "createdAt": "2025-05-23T23:30:44.465Z"
+    },
+    "xjufPMU-9mlEjLl-dEoRqveleg7XMNs4": {
+      "userId": 1,
+      "email": "test@gmail.com",
+      "username": "Martin",
+      "createdAt": "2025-05-23T23:36:11.762Z"
+    },
+    "XmONfzTn9R3aS871KFaV8jU0aq7g5yEX": {
+      "userId": 1,
+      "email": "test@gmail.com",
+      "username": "Martin",
+      "createdAt": "2025-05-23T23:38:11.515Z"
+    },
+    "gMLJvZCSriclfDf8xPunWbFe-zLhAzZ3": {
+      "userId": 1,
+      "email": "test@gmail.com",
+      "username": "Martin",
+      "createdAt": "2025-05-23T23:39:59.066Z"
+    }
+  }
+}

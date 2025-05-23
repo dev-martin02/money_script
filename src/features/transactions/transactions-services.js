@@ -10,12 +10,9 @@ export async function add_transactions(transactions) {
     value.amount,
     value.transaction_type,
     value.category_id,
-    value.payment_method,
+    value.method,
     value.notes || null,
-    value.receipt_number || null,
-    value.receipt_date || null,
-    value.store_name || null,
-    value.receipt_image_path || null,
+    value.place || null,
   ]);
   try {
     const result = await add_transaction_records(transaction_values);

@@ -23,7 +23,7 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user = req.session.user_id;
+      const user = req.session.id;
       const data = await weekly_expenses(user);
       res.status(200).json({ message: data });
     } catch (error) {
@@ -39,7 +39,7 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user = req.session.user_id;
+      const user = req.session.id;
       const data = await weekly_monthly(user);
       res.status(200).json({ message: data });
     } catch (error) {
@@ -55,7 +55,7 @@ transactions_Router
   .all(check_user)
   .get(async (req, res) => {
     try {
-      const user = req.session.user_id;
+      const user = req.session.id;
       const data = await weekly_yearly(user);
       res.status(200).json({ message: data });
     } catch (error) {

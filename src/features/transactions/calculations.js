@@ -1,84 +1,68 @@
 import { DB_connection } from "../../shared/database.js";
 
-export async function weekly_expenses(user_id) {
-  let connection;
-
+export async function weekly_expenses(id) {
   try {
-    connection = await DB_connection();
+    const db = await DB_connection();
     const query = `
       SELECT 
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS total_income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS total_expense
       FROM transactions
-      WHERE user_id = ?
-        AND MONTH(transaction_date) = MONTH(CURDATE())
-        AND YEAR(transaction_date) = YEAR(CURDATE())
+      WHERE id = ?
+        AND strftime('%m', transaction_date) = strftime('%m', 'now')
+        AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
     `;
-    const [rows] = await connection.execute(query, [user_id]);
-    return rows[0];
+    const result = await db.getAsync(query, [id]);
+    return result || { total_income: 0, total_expense: 0 };
   } catch (error) {
-    console.error(error);
-  } finally {
-    if (connection && typeof connection === "function") {
-      await connection.release();
-      console.log("Database connection closed.");
-    }
+    console.error("Error in weekly_expenses:", error);
+    throw error;
   }
 }
 
-export async function weekly_monthly(user_id) {
-  let connection;
+export async function weekly_monthly(id) {
   try {
-    connection = await DB_connection();
+    const db = await DB_connection();
     const query = `
       SELECT 
-        YEAR(transaction_date) AS year,
-        WEEK(transaction_date, 1) AS week,
+        strftime('%Y', transaction_date) AS year,
+        strftime('%W', transaction_date) AS week,
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS expense
       FROM transactions
-      WHERE user_id = ?
-        AND MONTH(transaction_date) = MONTH(CURDATE())
-        AND YEAR(transaction_date) = YEAR(CURDATE())
+      WHERE id = ?
+        AND strftime('%m', transaction_date) = strftime('%m', 'now')
+        AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
       GROUP BY year, week
       ORDER BY year, week
     `;
-    const [rows] = await connection.execute(query, [user_id]);
-    return rows;
+    const rows = await db.allAsync(query, [id]);
+    return rows || [];
   } catch (error) {
-    console.error(error);
-  } finally {
-    if (connection && typeof connection === "function") {
-      await connection.release();
-      console.log("Database connection closed.");
-    }
+    console.error("Error in weekly_monthly:", error);
+    throw error;
   }
 }
 
-export async function weekly_yearly(user_id) {
-  let connection;
+export async function weekly_yearly(id) {
   try {
-    connection = await DB_connection();
+    const db = await DB_connection();
     const query = `
       SELECT 
-        YEAR(transaction_date) AS year,
-        MONTH(transaction_date) AS month,
+        strftime('%Y', transaction_date) AS year,
+        strftime('%m', transaction_date) AS month,
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS expense
       FROM transactions
-      WHERE user_id = ?
-        AND YEAR(transaction_date) = YEAR(CURDATE())
+      WHERE id = ?
+        AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
       GROUP BY year, month
       ORDER BY month
     `;
-    const [rows] = await connection.execute(query, [user_id]);
-    return rows;
+    const rows = await db.allAsync(query, [id]);
+    return rows || [];
   } catch (error) {
-    console.error(error);
-  } finally {
-    if (connection && typeof connection === "function") {
-      await connection.release();
-      console.log("Database connection closed.");
-    }
+    console.error("Error in weekly_yearly:", error);
+    throw error;
   }
 }

@@ -1,37 +1,40 @@
 import { withConnection } from "../database.js";
+import { getSession } from "../../utils/cache.js";
 
 export async function check_user(req, res, next) {
-  const session = req.session;
+  // Get session from cache
+  const cachedSession = await getSession();
 
-  // Check if session and user_id exist
-  if (!session || !session.user_id) {
+  // Check if session exists in cache
+  if (!cachedSession) {
     return res.status(401).json({
       message: "Please login to access this resource",
     });
   }
 
+  req.session.user_id = cachedSession.userId;
+
   try {
     const user = await withConnection(async (connection) => {
-      const [rows] = await connection.execute(
-        "SELECT user_id, name, email FROM users WHERE user_id = ?",
-        [session.user_id]
+      const result = await connection.getAsync(
+        "SELECT id as id, username as name, email FROM users WHERE id = ?",
+        [cachedSession.userId]
       );
 
-      if (rows.length === 0) {
+      if (!result) {
         return null;
       }
 
-      return rows[0];
+      return result;
     });
 
     if (user) {
       // Only attach necessary user data to the request
       req.user = {
-        id: user.user_id,
+        id: user.id,
         name: user.name,
         email: user.email,
       };
-      session.user_id = user.user_id;
 
       return next();
     }

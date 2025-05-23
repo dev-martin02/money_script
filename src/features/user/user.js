@@ -9,9 +9,13 @@ class UserError extends Error {
 }
 
 function validateUserInfo(userInfo) {
-  const { name, email, password } = userInfo;
-
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
+  const { username, email, password } = userInfo;
+  console.log(username);
+  if (
+    !username ||
+    typeof username !== "string" ||
+    username.trim().length === 0
+  ) {
     throw new UserError("Name is required and must be a non-empty string");
   }
 
@@ -27,16 +31,34 @@ function validateUserInfo(userInfo) {
 // Create user
 export async function create_user(user_info) {
   try {
+    console.log("Creating user with info:", user_info);
     validateUserInfo(user_info);
 
-    const { name, email, password } = user_info;
-    const query = "INSERT INTO users (name, email, password) VALUES (?, ?, ?);";
+    const { username, email, password } = user_info;
+    const query =
+      "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?);";
+    console.log("Executing query:", query, "with values:", [
+      username,
+      email,
+      password,
+    ]);
 
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, [name, email, password]);
-      return { success: true, userId: result.insertId };
+      const result = await connection.runAsync(query, [
+        username,
+        email,
+        password,
+      ]);
+      console.log("SQLite result:", result);
+
+      if (!result || result.changes === 0) {
+        console.error("No changes made to database. Result:", result);
+        throw new UserError("Failed to create user - no changes made");
+      }
+      return { success: true, userId: result.lastID };
     });
   } catch (error) {
+    console.error("Error in create_user:", error);
     if (error instanceof UserError || error instanceof DatabaseError) {
       throw error;
     }
@@ -53,15 +75,14 @@ export async function retrieve_user(user_info) {
       throw new UserError("Email and password are required");
     }
 
-    const query = `SELECT user_id, name, email FROM users WHERE email = ? AND password = ?`;
+    const query = `SELECT id, username, email FROM users WHERE email = ? AND password_hash = ?`;
 
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, [email, password]);
-      if (result.length === 0) {
+      const result = await connection.getAsync(query, [email, password]);
+      if (!result) {
         throw new UserError("Invalid email or password");
       }
-
-      return result;
+      return [result];
     });
   } catch (error) {
     if (error instanceof UserError || error instanceof DatabaseError) {
@@ -70,18 +91,19 @@ export async function retrieve_user(user_info) {
     throw new UserError("Failed to retrieve user", error);
   }
 }
-export async function retrieve_user_by_id(user_id) {
+
+export async function retrieve_user_by_id(id) {
   try {
-    if (!user_id && typeof user_id === "number") {
-      throw new UserError("Needs to have an user id");
+    if (!id || typeof id !== "number") {
+      throw new UserError("Valid user ID is required");
     }
 
-    const query = `SELECT name, email FROM users WHERE user_id = ?`;
+    const query = `SELECT username, email FROM users WHERE id = ?`;
 
     return await withConnection(async (connection) => {
-      const [result] = await connection.execute(query, [user_id]);
-      if (result.length === 0) {
-        throw new UserError("User is don't exist!");
+      const result = await connection.getAsync(query, [id]);
+      if (!result) {
+        throw new UserError("User does not exist!");
       }
       return result;
     });

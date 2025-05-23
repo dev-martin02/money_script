@@ -33,8 +33,8 @@ export async function paginate({
     FROM (${baseQuery} ${whereClause}) as count_table
   `;
 
-  const [[countRow]] = await connection.execute(countQuery, params);
-  const [rows] = await connection.execute(finalQuery, finalParams);
+  const countRow = await connection.getAsync(countQuery, params);
+  const rows = await connection.allAsync(finalQuery, finalParams);
 
   return {
     data: rows,

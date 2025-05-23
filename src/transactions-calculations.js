@@ -8,7 +8,7 @@ export async function transactions_pagination() {
 
   // if the user has the
   const query = `SELECT * FROM transactions
-      WHERE user_id = ? LIMIT  ? OFFSET ?`;
+      WHERE id = ? LIMIT  ? OFFSET ?`;
 
   return await withConnection(async (connection) => {
     const [result] = await connection.query(query, [1, limit, offset]);
