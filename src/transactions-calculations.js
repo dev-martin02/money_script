@@ -15,5 +15,3 @@ export async function transactions_pagination() {
     return result;
   });
 }
-
-console.log(await transactions_pagination());

@@ -1,6 +1,6 @@
 import { DB_connection } from "../../shared/database.js";
 
-export async function weekly_expenses(id) {
+export async function monthly_totals(id) {
   try {
     const db = await DB_connection();
     const query = `
@@ -8,14 +8,14 @@ export async function weekly_expenses(id) {
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS total_income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS total_expense
       FROM transactions
-      WHERE id = ?
+      WHERE user_id = ?
         AND strftime('%m', transaction_date) = strftime('%m', 'now')
         AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
     `;
     const result = await db.getAsync(query, [id]);
     return result || { total_income: 0, total_expense: 0 };
   } catch (error) {
-    console.error("Error in weekly_expenses:", error);
+    console.error("Error in monthly_totals:", error);
     throw error;
   }
 }
@@ -30,7 +30,7 @@ export async function weekly_monthly(id) {
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS expense
       FROM transactions
-      WHERE id = ?
+      WHERE user_id = ?
         AND strftime('%m', transaction_date) = strftime('%m', 'now')
         AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
       GROUP BY year, week
@@ -44,7 +44,7 @@ export async function weekly_monthly(id) {
   }
 }
 
-export async function weekly_yearly(id) {
+export async function monthly_yearly(id) {
   try {
     const db = await DB_connection();
     const query = `
@@ -54,7 +54,7 @@ export async function weekly_yearly(id) {
         SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS income,
         SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS expense
       FROM transactions
-      WHERE id = ?
+      WHERE user_id = ?
         AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
       GROUP BY year, month
       ORDER BY month
@@ -62,7 +62,7 @@ export async function weekly_yearly(id) {
     const rows = await db.allAsync(query, [id]);
     return rows || [];
   } catch (error) {
-    console.error("Error in weekly_yearly:", error);
+    console.error("Error in monthly_yearly:", error);
     throw error;
   }
 }

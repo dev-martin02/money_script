@@ -4,7 +4,10 @@ import {
   BadRequestError,
   NotFoundError,
 } from "../../utils/errors/errors.js";
-import { get_transactions_records } from "./transactions-db.js";
+import {
+  get_monthly_totals,
+  get_transactions_records,
+} from "./transactions-db.js";
 import { add_transactions } from "./transactions-services.js";
 
 function validateTransactionFields(transaction) {
@@ -48,12 +51,10 @@ export async function submit_transaction(req, res) {
 
     transaction_arr.forEach(validateTransactionFields);
 
-    console.log(transaction_arr.length);
     const response = await add_transactions(transaction_arr);
 
     res.status(200).json({ message: response });
   } catch (error) {
-    console.log("transactions error submitting the from:", error);
     res
       .status(500)
       .json({ message: "Problem on the server, please contact support" });
@@ -72,6 +73,30 @@ export async function get_transactions(req, res) {
     }
 
     const response = await get_transactions_records(id);
+    res.status(200).json({ message: response });
+  } catch (error) {
+    if (
+      error instanceof BadRequestError ||
+      error instanceof DatabaseError ||
+      error instanceof NotFoundError
+    ) {
+      throw error;
+    }
+    throw new ApiError("Failed to retrieve transactions", error);
+  }
+}
+
+export async function get_month_summary(req, res) {
+  const id = req.session.user_id;
+  if (!id) {
+    throw new BadRequestError("User ID is required");
+  }
+  if (typeof id !== "number" && isNaN(id)) {
+    throw new NotFoundError("Invalid User ID");
+  }
+
+  try {
+    const response = await get_monthly_totals(id);
     res.status(200).json({ message: response });
   } catch (error) {
     if (

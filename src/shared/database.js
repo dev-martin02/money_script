@@ -30,7 +30,6 @@ export async function DB_connection() {
             new DatabaseError("Failed to establish database connection", err)
           );
         } else {
-          console.log("Database connection successful!");
           // Enable foreign keys
           db.run("PRAGMA foreign_keys = ON");
           // Initialize database schema if not exists
@@ -121,11 +120,8 @@ async function initializeDatabase(db) {
 
 export async function withConnection(operation) {
   try {
-    console.log("Getting database connection...");
     const connection = await DB_connection();
-    console.log("Database connection obtained, executing operation...");
     const result = await operation(connection);
-    console.log("Operation completed successfully");
     return result;
   } catch (error) {
     console.error("Database operation error:", error);

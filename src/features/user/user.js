@@ -10,7 +10,6 @@ class UserError extends Error {
 
 function validateUserInfo(userInfo) {
   const { username, email, password } = userInfo;
-  console.log(username);
   if (
     !username ||
     typeof username !== "string" ||
@@ -31,17 +30,11 @@ function validateUserInfo(userInfo) {
 // Create user
 export async function create_user(user_info) {
   try {
-    console.log("Creating user with info:", user_info);
     validateUserInfo(user_info);
 
     const { username, email, password } = user_info;
     const query =
       "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?);";
-    console.log("Executing query:", query, "with values:", [
-      username,
-      email,
-      password,
-    ]);
 
     return await withConnection(async (connection) => {
       const result = await connection.runAsync(query, [

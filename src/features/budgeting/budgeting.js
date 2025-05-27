@@ -64,10 +64,8 @@ export function create_budgeting_plan(params) {
   // PARAMS -> EXPENSES LIST, USER INCOME (PAY CHECK)
   // user_expenses -> list of json array
   const month_plan = month_planner(user_expenses);
-  console.log(month_plan);
 
   const money_left = available_money_monthly(user_expenses, user_paycheck);
-  console.log(money_left);
   pdf_maker(month_plan, money_left);
 }
 

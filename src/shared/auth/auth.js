@@ -72,7 +72,6 @@ auth_Router.route("/me").get(check_user, async (req, res) => {
   try {
     const response = await retrieve_user_by_id(cachedSession.userId);
     const user = response;
-    console.log(user);
 
     req.session.user_id = response.userId;
     res.status(200).json({

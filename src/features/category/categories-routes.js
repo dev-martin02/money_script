@@ -36,7 +36,6 @@ categories_Router
       const user = req.session.user_id;
 
       category_body["user_id"] = user;
-      console.log(user);
       const response = await add_category([category_body]);
       res.status(201).json({ message: response });
     } catch (error) {
