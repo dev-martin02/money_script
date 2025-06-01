@@ -13,7 +13,7 @@ import auth_Router from "./src/shared/auth/auth.js";
 const server = express();
 const port = 3000;
 const corsOptions = {
-  origin: "http://localhost:5173", // Replace with your frontend origin
+  origin: "http://localhost:8080", // Replace with your frontend origin
   credentials: true,
 };
 

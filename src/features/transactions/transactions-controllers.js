@@ -41,28 +41,34 @@ function validateTransactionFields(transaction) {
 
 export async function submit_transaction(req, res) {
   try {
-    const transaction_body = req.body;
-    transaction_body["user_id"] = req.session.user_id;
-    const transaction_arr = [transaction_body];
+    const transactions = Array.isArray(req.body) ? req.body : [req.body];
 
-    if (transaction_arr.length === 0) {
-      throw new BadRequestError("Transactions can't be an empty");
+    // Add user_id to each transaction
+    const transactions_with_user = transactions.map((transaction) => ({
+      ...transaction,
+      user_id: req.session.user_id || 1,
+    }));
+
+    if (transactions_with_user.length === 0) {
+      throw new BadRequestError("Transactions can't be empty");
     }
 
-    transaction_arr.forEach(validateTransactionFields);
+    transactions_with_user.forEach(validateTransactionFields);
 
-    const response = await add_transactions(transaction_arr);
+    const response = await add_transactions(transactions_with_user);
 
     res.status(200).json({ message: response });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Problem on the server, please contact support" });
+    res.status(402).json({
+      error: "Problem on the server, please contact support",
+      details: error.message,
+    });
   }
 }
 
 export async function get_transactions(req, res) {
   try {
+    console.log("heelo");
     const id = req.session.user_id;
 
     if (!id) {
