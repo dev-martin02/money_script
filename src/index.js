@@ -13,14 +13,10 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
-const corsOptions = {
-  origin: "http://localhost:8080", // Replace with your frontend origin
-  credentials: true,
-};
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Your frontend URL
+    origin: "http://localhost:8080", // Replace with your frontend origin
     credentials: true,
   })
 );
@@ -38,13 +34,16 @@ app.use(
     },
   })
 );
-app.use(cors(corsOptions));
 
 // Routes
-app.use("/api", transactions_Router);
-app.use("/api", categories_Router);
-app.use("/api", auth_Router);
-app.use("/api", user_Router);
+// USER
+app.use(user_Router);
+// CATEGORY
+app.use(categories_Router);
+// TRANSACTION
+app.use(transactions_Router);
+// auth
+app.use(auth_Router);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
