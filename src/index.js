@@ -2,10 +2,16 @@ import express from "express";
 import session from "express-session";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import { RedisStore } from "connect-redis";
+dotenv.config();
+
+// Routes
 import transactions_Router from "./features/transactions/transactions-routes.js";
 import categories_Router from "./features/category/categories-routes.js";
 import auth_Router from "./shared/auth/auth.js";
 import user_Router from "./features/user/user-routes.js";
+import { redisClient } from "./shared/config/redis.config.js";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -24,13 +30,15 @@ app.use(
 // Session configuration
 app.use(
   session({
-    secret: "your-secret-key",
+    store: new RedisStore({ client: redisClient }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", // true in production
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      maxAge: parseInt(process.env.SESSION_EXPIRATION) || 24 * 60 * 60 * 1000,
+      sameSite: "strict", // Helps prevent CSRF attacks
     },
   })
 );

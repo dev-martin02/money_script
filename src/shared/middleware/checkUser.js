@@ -2,8 +2,10 @@ import { withConnection } from "../database.js";
 import { getSession } from "../../utils/cache.js";
 
 export async function check_user(req, res, next) {
+  const sessionId = req.session.id;
+
   // Get session from cache
-  const cachedSession = await getSession();
+  const cachedSession = await getSession(sessionId);
 
   // Check if session exists in cache
   if (!cachedSession) {

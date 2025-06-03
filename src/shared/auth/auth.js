@@ -31,7 +31,6 @@ auth_Router.route("/login").post(async (req, res) => {
         userId: user.id,
         email: user.email,
         username: user.username,
-        createdAt: new Date().toISOString(),
       });
 
       res.status(200).json({
@@ -60,8 +59,7 @@ auth_Router.route("/login").post(async (req, res) => {
 
 auth_Router.route("/me").get(check_user, async (req, res) => {
   const sessionId = req.session.id;
-  const cachedSession = await getSession();
-
+  const cachedSession = await getSession(sessionId);
   if (!cachedSession) {
     return res.status(401).json({
       success: false,

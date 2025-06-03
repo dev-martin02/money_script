@@ -68,7 +68,6 @@ export async function submit_transaction(req, res) {
 
 export async function get_transactions(req, res) {
   try {
-    console.log("heelo");
     const id = req.session.user_id;
 
     if (!id) {

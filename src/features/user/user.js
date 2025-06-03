@@ -7,7 +7,7 @@ class UserError extends Error {
     this.originalError = originalError;
   }
 }
-
+// TODO: Encryp user passwords!!!
 function validateUserInfo(userInfo) {
   const { username, email, password } = userInfo;
   if (

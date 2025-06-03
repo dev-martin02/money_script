@@ -1,65 +1,44 @@
-import fs from "fs/promises";
-import path from "path";
-
-const CACHE_FILE = path.join(process.cwd(), "src", "utils", "sessions.json");
-
-// Initialize cache file if it doesn't exist
-async function initializeCache() {
-  try {
-    await fs.access(CACHE_FILE);
-  } catch {
-    await fs.writeFile(CACHE_FILE, JSON.stringify({ sessions: {} }));
-  }
-}
+import { redisClient } from "../shared/config/redis.config.js";
 
 /**
- * Save session data to the cache file
+ * Save session data to Redis
  * @param {string} sessionId - The session ID
  * @param {Object} sessionData - The session data to store
  */
 export async function saveSession(sessionId, sessionData) {
   try {
-    await initializeCache();
-    const cache = JSON.parse(await fs.readFile(CACHE_FILE, "utf-8"));
-
-    cache.sessions[sessionId] = sessionData;
-    await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+    // Store session data with 24 hour expiration
+    await redisClient.set(`session:${sessionId}`, JSON.stringify(sessionData), {
+      EX: 86400, // 24 hours in seconds
+    });
   } catch (error) {
-    console.error("Error saving session to cache:", error);
+    console.error("Error saving session to Redis:", error);
   }
 }
 
 /**
- * Get session data from the cache file
+ * Get session data from Redis
  * @param {string} sessionId - The session ID to retrieve
  * @returns {Object|null} The session data or null if not found
  */
-export async function getSession() {
+export async function getSession(sessionId) {
   try {
-    await initializeCache();
-    const cache = await JSON.parse(await fs.readFile(CACHE_FILE, "utf-8"));
-
-    const session = cache.sessions;
-    const user = session["om6ULnZ8mKgoLbsSh8xBgVPmX1y5bXPW"];
-
-    return user;
+    const sessionData = await redisClient.get(`session:${sessionId}`);
+    return sessionData ? JSON.parse(sessionData) : null;
   } catch (error) {
-    console.error("Error reading session from cache:", error);
+    console.error("Error reading session from Redis:", error);
     return null;
   }
 }
 
 /**
- * Remove session from the cache file
+ * Remove session from Redis
  * @param {string} sessionId - The session ID to remove
  */
 export async function removeSession(sessionId) {
   try {
-    await initializeCache();
-    const cache = JSON.parse(await fs.readFile(CACHE_FILE, "utf-8"));
-    delete cache.sessions[sessionId];
-    await fs.writeFile(CACHE_FILE, JSON.stringify(cache, null, 2));
+    await redisClient.del(`session:${sessionId}`);
   } catch (error) {
-    console.error("Error removing session from cache:", error);
+    console.error("Error removing session from Redis:", error);
   }
 }

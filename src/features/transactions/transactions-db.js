@@ -31,25 +31,55 @@ export async function add_transaction_records(transaction_values) {
   }
 }
 
-export async function get_transactions_records(id) {
-  const query = `
-      SELECT 
-        id,
-        amount,
-        place,
-        transaction_date,
-        description,
-        method,
-        category_id,
-        transaction_type,
-        notes
-      FROM transactions
-      WHERE user_id = ?
-    `;
+export async function get_transactions_records(userId, limit = 10, page = 1) {
+  const offset = (page - 1) * limit; // rows to skip
+
+  const recordsQuery = `
+    SELECT 
+      id,
+      amount,
+      place,
+      transaction_date,
+      description,
+      method,
+      category_id,
+      transaction_type,
+      notes
+    FROM transactions
+    WHERE user_id = ?
+    ORDER BY transaction_date DESC
+    LIMIT ? OFFSET ?
+  `;
+
+  const countQuery = `
+    SELECT COUNT(*) as total
+    FROM transactions
+    WHERE user_id = ?
+  `;
+
   try {
     return await withConnection(async (connection) => {
-      const result = await connection.allAsync(query, [id]);
-      return result;
+      const records = await connection.allAsync(recordsQuery, [
+        userId,
+        limit,
+        offset,
+      ]);
+      const countResult = await connection.getAsync(countQuery, [userId]);
+
+      const total = countResult?.total || 0; // defensive js
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data: records,
+        pagination: {
+          total,
+          page,
+          totalPages,
+          limit,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1,
+        },
+      };
     });
   } catch (error) {
     console.error("Error on Database Transactions:", error);
