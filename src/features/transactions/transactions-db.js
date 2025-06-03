@@ -63,23 +63,33 @@ export async function get_transactions_records(id) {
 export async function get_monthly_totals(id) {
   try {
     const db = await DB_connection();
+    //TODOl: FIX THIS TO BE DINAMICALLY
+    // Let's first verify the current month and year
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth(); // JavaScript months are 0-based
+    const currentYear = currentDate.getFullYear();
+
     const query = `
       SELECT 
-        SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS total_income,
-        SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS total_expense
+        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
+        COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense
       FROM transactions
       WHERE user_id = ?
-        AND strftime('%m', transaction_date) = strftime('%m', 'now')
-        AND strftime('%Y', transaction_date) = strftime('%Y', 'now')
+        AND strftime('%m', transaction_date) = ?
+        AND strftime('%Y', transaction_date) = ?
     `;
-    const result = await db.getAsync(query, [id]);
+
+    const result = await db.getAsync(query, [
+      id,
+      currentMonth.toString().padStart(2, "0"), // Ensure month is 2 digits
+      currentYear.toString(),
+    ]);
+
+    console.log("Query result:", result);
     return result || { total_income: 0, total_expense: 0 };
   } catch (error) {
-    if (error instanceof DatabaseError) {
-      console.log(error.message);
-      throw error;
-    }
-    throw new DatabaseError("Error getting monthly_totals:", error.message);
+    console.error("Error in get_monthly_totals:", error);
+    return { total_income: 0, total_expense: 0 };
   }
 }
 
