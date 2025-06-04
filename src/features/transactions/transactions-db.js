@@ -31,7 +31,7 @@ export async function add_transaction_records(transaction_values) {
   }
 }
 
-export async function get_transactions_records(userId, limit = 10, page = 1) {
+export async function get_transactions_records(userId, page = 1, limit = 10) {
   const offset = (page - 1) * limit; // rows to skip
 
   const recordsQuery = `

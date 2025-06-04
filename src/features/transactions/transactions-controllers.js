@@ -69,7 +69,6 @@ export async function submit_transaction(req, res) {
 export async function get_transactions(req, res) {
   try {
     const id = req.session.user_id;
-
     if (!id) {
       throw new BadRequestError("User ID is required");
     }
@@ -77,7 +76,10 @@ export async function get_transactions(req, res) {
       throw new NotFoundError("Invalid User ID");
     }
 
-    const response = await get_transactions_records(id);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const response = await get_transactions_records(id, page, limit);
     res.status(200).json({ message: response });
   } catch (error) {
     if (
