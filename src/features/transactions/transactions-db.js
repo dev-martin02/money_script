@@ -90,7 +90,9 @@ export async function get_transactions_records(userId, page = 1, limit = 10) {
   }
 }
 
-export async function get_monthly_totals(id) {
+// ---------------------------- Transactions Calculations -----------------------------
+
+export async function month_summary(id) {
   try {
     const db = await DB_connection();
     //TODOl: FIX THIS TO BE DINAMICALLY
@@ -123,7 +125,7 @@ export async function get_monthly_totals(id) {
   }
 }
 
-export async function get_weekly_breakdown(id, month = null, year = null) {
+export async function month_weekly_breakdown(id, month = null, year = null) {
   try {
     const db = await DB_connection();
     const query = `
@@ -166,5 +168,58 @@ export async function get_weekly_breakdown(id, month = null, year = null) {
       throw error;
     }
     throw new DatabaseError("Error getting weekly breakdown:", error);
+  }
+}
+
+export async function get_category_breakdown(
+  userId,
+  month = null,
+  year = null
+) {
+  try {
+    const db = await DB_connection();
+
+    // If month/year not provided, use current
+    const now = new Date();
+    const targetMonth = month
+      ? month.toString().padStart(2, "0")
+      : (now.getMonth() + 1).toString().padStart(2, "0"); // JS months are 0-based
+    const targetYear = year ? year.toString() : now.getFullYear().toString();
+
+    const query = `
+      SELECT 
+        c.id as category_id,
+        c.name as category_name,
+        c.type as category_type,
+        c.color as category_color,
+        c.icon as category_icon,
+        SUM(t.amount) as total_amount,
+        COUNT(t.id) as transaction_count
+      FROM categories c
+      LEFT JOIN transactions t ON c.id = t.category_id AND t.user_id = ?
+      WHERE c.user_id = ? 
+        AND strftime('%m', t.transaction_date) = ?
+        AND strftime('%Y', t.transaction_date) = ?
+      GROUP BY c.id, c.name, c.type, c.color, c.icon
+      ORDER BY total_amount DESC
+    `;
+
+    const rows = await db.allAsync(query, [
+      userId,
+      userId,
+      targetMonth,
+      targetYear,
+    ]);
+
+    // Separate income and expense categories
+    const breakdown = {
+      income: rows.filter((row) => row.category_type === "income"),
+      expense: rows.filter((row) => row.category_type === "expense"),
+    };
+
+    return breakdown;
+  } catch (error) {
+    console.error("Error in get_category_breakdown:", error);
+    throw error;
   }
 }

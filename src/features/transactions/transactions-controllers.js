@@ -5,8 +5,10 @@ import {
   NotFoundError,
 } from "../../utils/errors/errors.js";
 import {
-  get_monthly_totals,
+  month_summary,
   get_transactions_records,
+  get_category_breakdown,
+  monthly_yearly,
 } from "./transactions-db.js";
 import { add_transactions } from "./transactions-services.js";
 
@@ -103,7 +105,7 @@ export async function get_month_summary(req, res) {
   }
 
   try {
-    const response = await get_monthly_totals(id);
+    const response = await month_summary(id);
     res.status(200).json({ message: response });
   } catch (error) {
     if (
@@ -114,5 +116,38 @@ export async function get_month_summary(req, res) {
       throw error;
     }
     throw new ApiError("Failed to retrieve transactions", error);
+  }
+}
+
+export async function monthly_breakdown_yearly(req, res) {
+  try {
+    const userId = req.session.user_id;
+    const data = await monthly_yearly(userId);
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error("Error fetching monthly breakdown:", error);
+    res.status(500).json({
+      error: "Problem on the server, please contact support",
+      details: error.message,
+    });
+  }
+}
+
+export async function category_breakdown(req, res) {
+  try {
+    const userId = req.session.user_id;
+    const { month, year } = req.query; // These will be strings or undefined
+
+    const monthNum = month ? parseInt(month, 10) : null;
+    const yearNum = year ? parseInt(year, 10) : null;
+
+    const data = await get_category_breakdown(userId, monthNum, yearNum);
+    res.status(200).json({ data });
+  } catch (error) {
+    console.error("Error fetching category breakdown:", error);
+    res.status(500).json({
+      error: "Problem on the server, please contact support",
+      details: error.message,
+    });
   }
 }
