@@ -8,7 +8,6 @@ import {
   month_summary,
   get_transactions_records,
   get_category_breakdown,
-  monthly_yearly,
 } from "./transactions-db.js";
 import { add_transactions } from "./transactions-services.js";
 
@@ -122,7 +121,7 @@ export async function get_month_summary(req, res) {
 export async function monthly_breakdown_yearly(req, res) {
   try {
     const userId = req.session.user_id;
-    const data = await monthly_yearly(userId);
+    const data = console.log("surrrpriseeeee");
     res.status(200).json({ data });
   } catch (error) {
     console.error("Error fetching monthly breakdown:", error);
