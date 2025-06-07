@@ -42,7 +42,6 @@ export async function create_user(user_info) {
         email,
         password,
       ]);
-      console.log("SQLite result:", result);
 
       if (!result || result.changes === 0) {
         console.error("No changes made to database. Result:", result);

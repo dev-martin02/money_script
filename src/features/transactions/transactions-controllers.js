@@ -8,6 +8,7 @@ import {
   month_summary,
   get_transactions_records,
   get_category_breakdown,
+  get_monthly_breakdown,
 } from "./transactions-db.js";
 import { add_transactions } from "./transactions-services.js";
 
@@ -118,20 +119,6 @@ export async function get_month_summary(req, res) {
   }
 }
 
-export async function monthly_breakdown_yearly(req, res) {
-  try {
-    const userId = req.session.user_id;
-    const data = console.log("surrrpriseeeee");
-    res.status(200).json({ data });
-  } catch (error) {
-    console.error("Error fetching monthly breakdown:", error);
-    res.status(500).json({
-      error: "Problem on the server, please contact support",
-      details: error.message,
-    });
-  }
-}
-
 export async function category_breakdown(req, res) {
   try {
     const userId = req.session.user_id;
@@ -148,5 +135,29 @@ export async function category_breakdown(req, res) {
       error: "Problem on the server, please contact support",
       details: error.message,
     });
+  }
+}
+
+export async function monthly_breakdown_year(req, res) {
+  try {
+    const userId = req.session.user_id;
+    if (!userId) {
+      throw new BadRequestError("User ID is required");
+    }
+    if (typeof userId !== "number" && isNaN(userId)) {
+      throw new NotFoundError("Invalid User ID");
+    }
+
+    const data = await get_monthly_breakdown(userId);
+    res.status(200).json({ data });
+  } catch (error) {
+    if (
+      error instanceof BadRequestError ||
+      error instanceof DatabaseError ||
+      error instanceof NotFoundError
+    ) {
+      throw error;
+    }
+    throw new ApiError("Failed to retrieve monthly breakdown", error);
   }
 }

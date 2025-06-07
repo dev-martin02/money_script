@@ -223,3 +223,46 @@ export async function get_category_breakdown(
     throw error;
   }
 }
+
+export async function get_monthly_breakdown(userId) {
+  try {
+    const db = await DB_connection();
+    const query = `
+      SELECT 
+        strftime('%Y-%m', transaction_date) as month,
+        SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) as total_income,
+        SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) as total_expense,
+        SUM(CASE 
+          WHEN transaction_type = 'income' THEN amount 
+          WHEN transaction_type = 'expense' THEN -amount 
+          ELSE 0 
+        END) as net_amount,
+        COUNT(CASE WHEN transaction_type = 'income' THEN 1 END) as income_count,
+        COUNT(CASE WHEN transaction_type = 'expense' THEN 1 END) as expense_count
+      FROM transactions
+      WHERE user_id = ?
+      GROUP BY strftime('%Y-%m', transaction_date)
+      ORDER BY month DESC
+    `;
+
+    const results = await db.allAsync(query, [userId]);
+
+    // Format the results to include transaction counts in a nested object
+    return results.map((month) => ({
+      month: month.month,
+      total_income: month.total_income || 0,
+      total_expense: month.total_expense || 0,
+      net_amount: month.net_amount || 0,
+      transaction_counts: {
+        income: month.income_count || 0,
+        expense: month.expense_count || 0,
+      },
+    }));
+  } catch (error) {
+    if (error instanceof DatabaseError) {
+      console.error("Database error in get_monthly_breakdown:", error);
+      throw error;
+    }
+    throw new DatabaseError("Error getting monthly breakdown:", error);
+  }
+}

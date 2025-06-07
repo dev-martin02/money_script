@@ -3,8 +3,8 @@ import { check_user } from "../../shared/middleware/checkUser.js";
 import {
   category_breakdown,
   get_month_summary,
+  monthly_breakdown_year,
   get_transactions,
-  monthly_breakdown_yearly,
   submit_transaction,
 } from "./transactions-controllers.js";
 const transactions_Router = express.Router();
@@ -21,17 +21,17 @@ transactions_Router
   .all(check_user)
   .get(get_month_summary);
 
-// Get weekly breakdown for current month
+// Get months breakdown from current year
 transactions_Router
-  .route("/transactions/weekly-breakdown")
+  .route("/transactions/monthly-breakdown")
   .all(check_user)
-  .get(monthly_breakdown_yearly);
+  .get(monthly_breakdown_year);
 
-// Get monthly breakdown for current year
-transactions_Router
-  .route("/transactions/current-year/monthly")
-  .all(check_user)
-  .get(monthly_breakdown_yearly);
+// Get weekly breakdown for current month
+// transactions_Router
+//   .route("/transactions/weekly-breakdown")
+//   .all(check_user)
+//   .get(monthly_breakdown_yearly);
 
 // Get category breakdown for transactions
 transactions_Router
