@@ -17,6 +17,7 @@ function validateTransactionFields(transaction) {
     "user_id",
     "transaction_date",
     "amount",
+    "transaction_name",
     "transaction_type",
     "category_id",
     "method",

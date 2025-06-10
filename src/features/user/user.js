@@ -109,3 +109,22 @@ export async function retrieve_user_by_id(id) {
 
 // Update user
 // Delete user
+export async function delete_user(id) {
+  try {
+    if (!id || typeof id !== "number") {
+      throw new UserError("Valid user ID is required");
+    }
+
+    const query = `DELETE FROM users WHERE id = ?`;
+
+    return await withConnection(async (connection) => {
+      const result = await connection.runAsync(query, [id]);
+      if (!result || result.changes === 0) {
+        throw new UserError("Failed to delete user - no changes made");
+      }
+      return { success: true, userId: id };
+    });
+  } catch (error) {
+    if (error instanceof UserError || error instanceof DatabaseError) {
+      throw error;
+} }}

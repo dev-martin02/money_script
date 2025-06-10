@@ -57,7 +57,7 @@ auth_Router.route("/login").post(async (req, res) => {
   }
 });
 
-auth_Router.route("/me").get(check_user, async (req, res) => {
+auth_Router.route("/refresh").get(check_user, async (req, res) => {
   const sessionId = req.session.id;
   const cachedSession = await getSession(sessionId);
   if (!cachedSession) {
@@ -104,5 +104,6 @@ auth_Router.route("/logout").post(async (req, res) => {
     });
   });
 });
+
 
 export default auth_Router;
