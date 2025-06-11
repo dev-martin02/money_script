@@ -14,7 +14,7 @@ import user_Router from "./features/user/user-routes.js";
 import { redisClient } from "./shared/config/redis.config.js";
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = 3000;
 
 // Middleware
 app.use(express.json());
@@ -28,20 +28,20 @@ app.use(
 );
 
 // Session configuration
-app.use(
-  session({
-    store: new RedisStore({ client: redisClient }),
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production", // true in production
-      httpOnly: true,
-      maxAge: parseInt(process.env.SESSION_EXPIRATION) || 24 * 60 * 60 * 1000,
-      sameSite: "strict", // Helps prevent CSRF attacks
-    },
-  })
-);
+// app.use(
+//   session({
+//     store: new RedisStore({ client: redisClient }),
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//       secure: process.env.NODE_ENV === "production", // true in production
+//       httpOnly: true,
+//       maxAge: parseInt(process.env.SESSION_EXPIRATION) || 24 * 60 * 60 * 1000,
+//       sameSite: "strict", // Helps prevent CSRF attacks
+//     },
+//   })
+// );
 
 // Routes
 // USER
