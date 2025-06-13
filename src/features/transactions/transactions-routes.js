@@ -5,6 +5,7 @@ import {
   get_month_summary,
   monthly_breakdown_year,
   get_transactions,
+  filter_transactions,
   submit_transaction,
 } from "./transactions-controllers.js";
 const transactions_Router = express.Router();
@@ -14,6 +15,11 @@ transactions_Router
   .all(check_user)
   .get(get_transactions)
   .post(submit_transaction);
+
+transactions_Router
+  .route("/transactions/filter")
+  .all(check_user)
+  .get(filter_transactions);
 
 // Get current month's total income and expenses
 transactions_Router

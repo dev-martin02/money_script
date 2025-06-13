@@ -9,6 +9,7 @@ import {
   get_transactions_records,
   get_category_breakdown,
   get_monthly_breakdown,
+  filter_records,
 } from "./transactions-db.js";
 import { add_transactions } from "./transactions-services.js";
 
@@ -83,6 +84,25 @@ export async function get_transactions(req, res) {
     const limit = parseInt(req.query.limit) || 10;
 
     const response = await get_transactions_records(id, page, limit);
+    res.status(200).json({ message: response });
+  } catch (error) {
+    if (
+      error instanceof BadRequestError ||
+      error instanceof DatabaseError ||
+      error instanceof NotFoundError
+    ) {
+      throw error;
+    }
+    throw new ApiError("Failed to retrieve transactions", error);
+  }
+}
+
+export async function filter_transactions(req, res) {
+  try {
+    const userId = req.session.user_id;
+    const { categoryId } = req.query;
+
+    const response = await filter_records(userId, categoryId);
     res.status(200).json({ message: response });
   } catch (error) {
     if (
