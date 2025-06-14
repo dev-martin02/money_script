@@ -117,7 +117,6 @@ export async function month_summary(id) {
       currentYear.toString(),
     ]);
 
-    console.log("Query result:", result);
     return result || { total_income: 0, total_expense: 0 };
   } catch (error) {
     console.error("Error in get_monthly_totals:", error);

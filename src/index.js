@@ -28,22 +28,22 @@ app.use(
 );
 
 // Session configuration
-// app.use(
-//   session({
-//     store: new RedisStore({ client: redisClient }),
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: {
-//       secure: process.env.NODE_ENV === "production", // true in production
-//       httpOnly: true,
-//       maxAge: parseInt(process.env.SESSION_EXPIRATION) || 24 * 60 * 60 * 1000,
-//       sameSite: "strict", // Helps prevent CSRF attacks
-//     },
-//   })
-// );
 
-// Routes
+app.use(
+  session({
+    store: new RedisStore({ client: redisClient }),
+    secret: "process.env.SESSION_SECRET",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // true in production
+      httpOnly: true,
+      maxAge: parseInt(process.env.SESSION_EXPIRATION) || 24 * 60 * 60 * 1000,
+      sameSite: "strict", // Helps prevent CSRF attacks
+    },
+  })
+);
+
 // USER
 app.use(user_Router);
 // CATEGORY

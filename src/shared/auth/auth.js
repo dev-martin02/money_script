@@ -20,7 +20,6 @@ auth_Router.route("/login").post(async (req, res) => {
       });
     }
 
-    console.log(email, password);
     const response = await retrieve_user({ email, password });
 
     if (response.length > 0) {
