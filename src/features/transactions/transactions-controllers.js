@@ -43,6 +43,7 @@ function validateTransactionFields(transaction) {
   }
 }
 
+// --------- Transactions Operations ----------
 export async function submit_transaction(req, res) {
   try {
     const transactions = Array.isArray(req.body) ? req.body : [req.body];
@@ -116,6 +117,7 @@ export async function filter_transactions(req, res) {
   }
 }
 
+// ---------- Transaction retrieve data ------------
 export async function get_month_summary(req, res) {
   const id = req.session.user_id;
   if (!id) {

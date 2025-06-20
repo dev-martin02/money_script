@@ -13,6 +13,8 @@ import auth_Router from "./shared/auth/auth.js";
 import user_Router from "./features/user/user-routes.js";
 import { redisClient } from "./shared/config/redis.config.js";
 
+process.noDeprecation = true;
+
 const app = express();
 const port = 3000;
 

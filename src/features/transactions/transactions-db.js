@@ -93,7 +93,7 @@ export async function get_transactions_records(userId, page = 1, limit = 10) {
 export async function filter_records(userId, categoryId) {
   const query = `
     SELECT * FROM transactions
-    WHERE user_id = ? AND category_id = ?
+    WHERE user_id = ? AND category_id = ? 
   `;
   return await withConnection(async (connection) => {
     const result = await connection.allAsync(query, [userId, categoryId]);
