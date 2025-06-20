@@ -18,7 +18,7 @@ function validateTransactionFields(transaction) {
     "user_id",
     "transaction_date",
     "amount",
-    "transaction_name",
+    "place",
     "transaction_type",
     "category_id",
     "method",
@@ -85,6 +85,7 @@ export async function get_transactions(req, res) {
     const limit = parseInt(req.query.limit) || 10;
 
     const response = await get_transactions_records(id, page, limit);
+    console.log(response);
     res.status(200).json({ message: response });
   } catch (error) {
     if (
