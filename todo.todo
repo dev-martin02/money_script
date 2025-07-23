@@ -1,0 +1,6 @@
+[] Migrate to better-sqlite
+[] Improve Error handling
+[] Integrated ZOD to validate SQL inputs, and others type of inputs
+[] Work on Reading transcripts from Nodejs to Python and store the value in the database 
+[] Create a Chatbot that can give you suggestions and also see your expenses
+[] Create a functonalities that create budegetings for you

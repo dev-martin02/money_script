@@ -1,13 +1,8 @@
 import { createClient } from "redis";
-import { promisify } from "node:util";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-// const redisClient = createClient({
-//   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
-//   password: process.env.REDIS_PASSWORD || undefined,
-// });
 const redisClient = createClient({
   url: `redis://localhost:6379/`,
 });

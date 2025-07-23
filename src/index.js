@@ -30,7 +30,6 @@ app.use(
 );
 
 // Session configuration
-
 app.use(
   session({
     store: new RedisStore({ client: redisClient }),
@@ -46,16 +45,13 @@ app.use(
   })
 );
 
-// USER
+// Routes
 app.use(user_Router);
-// CATEGORY
 app.use(categories_Router);
-// TRANSACTION
 app.use(transactions_Router);
-// auth
 app.use(auth_Router);
 
-// Error handling middleware
+// Error handling middleware ???
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({
