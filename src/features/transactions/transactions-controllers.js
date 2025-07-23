@@ -1,8 +1,8 @@
-import { DatabaseError } from "../../shared/database.js";
 import {
   ApiError,
   BadRequestError,
   NotFoundError,
+  DatabaseError
 } from "../../utils/errors/errors.js";
 import {
   month_summary,
@@ -11,6 +11,7 @@ import {
   get_monthly_breakdown,
   filter_records,
 } from "./transactions-db.js";
+
 import { add_transactions } from "./transactions-services.js";
 
 function validateTransactionFields(transaction) {
@@ -46,27 +47,31 @@ function validateTransactionFields(transaction) {
 // --------- Transactions Operations ----------
 export async function submit_transaction(req, res) {
   try {
-    const transactions = Array.isArray(req.body) ? req.body : [req.body];
+    const transactions = Array.isArray(req.body) ? req.body : [req.body]; // why are we using this ?
+    const userID = req.session.user_id
 
-    // Add user_id to each transaction
-    const transactions_with_user = transactions.map((transaction) => ({
-      ...transaction,
-      user_id: req.session.user_id || 1,
-    }));
+    if(!userID) throw new BadRequestError("User id is missing 0r not found")
 
-    if (transactions_with_user.length === 0) {
+    if (transactions.length === 0) {
       throw new BadRequestError("Transactions can't be empty");
     }
+    
+    // Add user_id to the transaction
+    const transactions_with_user = transactions.map((transaction) => ({
+      ...transaction,
+      user_id: req.session.user_id,
+    }));
 
     transactions_with_user.forEach(validateTransactionFields);
 
     const response = await add_transactions(transactions_with_user);
 
     res.status(200).json({ message: response });
+
   } catch (error) {
     res.status(402).json({
       error: "Problem on the server, please contact support",
-      details: error.message,
+      details: error.message, // store this in a file with date + other info
     });
   }
 }
@@ -85,8 +90,9 @@ export async function get_transactions(req, res) {
     const limit = parseInt(req.query.limit) || 10;
 
     const response = await get_transactions_records(id, page, limit);
-    console.log(response);
+
     res.status(200).json({ message: response });
+
   } catch (error) {
     if (
       error instanceof BadRequestError ||

@@ -41,12 +41,6 @@ transactions_Router
   .all(check_user)
   .get(monthly_breakdown_year);
 
-// Get weekly breakdown for current month
-// transactions_Router
-//   .route("/transactions/weekly-breakdown")
-//   .all(check_user)
-//   .get(monthly_breakdown_yearly);
-
 // Get category breakdown for transactions
 transactions_Router
   .route("/transactions/category-breakdown")
