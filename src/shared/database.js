@@ -1,67 +1,39 @@
-import sqlite3 from "sqlite3";
+import Database from "better-sqlite3";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { promisify } from "util";
+import { DatabaseError } from "../utils/errors/errors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const dbPath = join(__dirname, "..", "data", "database.sqlite");
 
-export class DatabaseError extends Error {
-  constructor(message, originalError = null) {
-    super(message);
-    this.name = "DatabaseError";
-    this.originalError = originalError;
+let db = null;
+
+export function getDatabase() {
+  if (db) return db;
+
+  try {
+    db = new Database(dbPath);
+
+    // Enable foreign keys
+    db.pragma("foreign_keys = ON");
+
+    // Initialize database schema if not exists
+    initializeDatabase(db);
+
+    return db;
+  } catch (error) {
+    throw new DatabaseError("Failed to establish database connection", error);
   }
 }
 
-let db = null;
-
-export async function DB_connection() {
-  if (db) return db;
-
-  return new Promise((resolve, reject) => {
-    db = new sqlite3.Database(
-      dbPath,
-      sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-      (err) => {
-        if (err) {
-          reject(
-            new DatabaseError("Failed to establish database connection", err)
-          );
-        } else {
-          // Enable foreign keys
-          db.run("PRAGMA foreign_keys = ON");
-          // Initialize database schema if not exists
-          initializeDatabase(db)
-            .then(() => {
-              // Promisify db methods we'll use
-              db.runAsync = function (sql, params) {
-                return new Promise((resolve, reject) => {
-                  db.run(sql, params, function (err) {
-                    if (err) reject(err);
-                    else resolve(this); // 'this' contains lastID and changes
-                  });
-                });
-              };
-              db.allAsync = promisify(db.all).bind(db);
-              db.getAsync = promisify(db.get).bind(db);
-              resolve(db);
-            })
-            .catch(reject);
-        }
-      }
-    );
-  });
-}
-
-async function initializeDatabase(db) {
+function initializeDatabase(db) {
   const schema = `
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       username TEXT UNIQUE NOT NULL,
       email TEXT UNIQUE NOT NULL,
-      password_hash TEXT NOT NULL,
+      password TEXT NOT NULL,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -78,26 +50,24 @@ async function initializeDatabase(db) {
     );
 
    CREATE TABLE IF NOT EXISTS transactions (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  category_id INTEGER,
-  amount DECIMAL(10,2) NOT NULL,
-  transaction_type TEXT CHECK(transaction_type IN ('income', 'expense')) NOT NULL,
-  description TEXT,
-  place TEXT,
-  transaction_date DATETIME NOT NULL,
-  notes TEXT,
-  method TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    category_id INTEGER,
+    amount DECIMAL(10,2) NOT NULL,
+    type TEXT CHECK(type IN ('income', 'expense')) NOT NULL,
+    description TEXT,
+    place TEXT,
+    date DATETIME NOT NULL,
+    notes TEXT,
+    method TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
 );
 
     -- Insert default categories if they don't exist
     INSERT OR IGNORE INTO categories (name, type) VALUES 
       ('Salary', 'income'),
-      ('Freelance', 'income'),
-      ('Investments', 'income'),
       ('Other Income', 'income'),
       ('Housing', 'expense'),
       ('Transportation', 'expense'),
@@ -109,22 +79,18 @@ async function initializeDatabase(db) {
       ('Other Expenses', 'expense');
   `;
 
-  return new Promise((resolve, reject) => {
-    db.exec(schema, (err) => {
-      if (err)
-        reject(new DatabaseError("Failed to initialize database schema", err));
-      else resolve();
-    });
-  });
+  try {
+    db.exec(schema);
+  } catch (error) {
+    throw new DatabaseError("Failed to initialize database schema", error);
+  }
 }
 
-export async function withConnection(operation) {
+export function withConnection(operation) {
   try {
-    const connection = await DB_connection();
-    const result = await operation(connection);
-    return result;
+    const connection = getDatabase();
+    return operation(connection);
   } catch (error) {
-    console.error("Database operation error:", error);
     if (error instanceof DatabaseError) {
       throw error;
     }

@@ -1,13 +1,7 @@
-import { withConnection, DatabaseError } from "../../shared/database.js";
+import { withConnection } from "../../shared/database.js";
+import { DatabaseError, UserError } from "../../utils/errors/errors.js";
 
-class UserError extends Error {
-  constructor(message, originalError = null) {
-    super(message);
-    this.name = "UserError";
-    this.originalError = originalError;
-  }
-}
-// TODO: Encryp user passwords!!!
+// TODO: Encrypt user passwords!!!
 function validateUserInfo(userInfo) {
   const { username, email, password } = userInfo;
   if (
@@ -28,26 +22,22 @@ function validateUserInfo(userInfo) {
 }
 
 // Create user
-export async function create_user(user_info) {
+export function create_user(user_info) {
   try {
     validateUserInfo(user_info);
 
     const { username, email, password } = user_info;
     const query =
-      "INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?);";
+      "INSERT INTO users (username, email, password) VALUES (?, ?, ?);";
 
-    return await withConnection(async (connection) => {
-      const result = await connection.runAsync(query, [
-        username,
-        email,
-        password,
-      ]);
+    return withConnection((connection) => {
+      const result = connection.prepare(query).run(username, email, password);
 
       if (!result || result.changes === 0) {
         console.error("No changes made to database. Result:", result);
         throw new UserError("Failed to create user - no changes made");
       }
-      return { success: true, userId: result.lastID };
+      return { success: true, userId: result.lastInsertRowid };
     });
   } catch (error) {
     console.error("Error in create_user:", error);
@@ -59,7 +49,7 @@ export async function create_user(user_info) {
 }
 
 // Retrieve user
-export async function retrieve_user(user_info) {
+export function retrieve_user(user_info) {
   try {
     const { email, password } = user_info;
 
@@ -67,10 +57,10 @@ export async function retrieve_user(user_info) {
       throw new UserError("Email and password are required");
     }
 
-    const query = `SELECT id, username, email FROM users WHERE email = ? AND password_hash = ?`;
+    const query = `SELECT id, username, email FROM users WHERE email = ? AND password = ?`;
 
-    return await withConnection(async (connection) => {
-      const result = await connection.getAsync(query, [email, password]);
+    return withConnection((connection) => {
+      const result = connection.prepare(query).get(email, password);
       if (!result) {
         throw new UserError("Invalid email or password");
       }
@@ -84,7 +74,7 @@ export async function retrieve_user(user_info) {
   }
 }
 
-export async function retrieve_user_by_id(id) {
+export function retrieve_user_by_id(id) {
   try {
     if (!id || typeof id !== "number") {
       throw new UserError("Valid user ID is required");
@@ -92,8 +82,8 @@ export async function retrieve_user_by_id(id) {
 
     const query = `SELECT username, email FROM users WHERE id = ?`;
 
-    return await withConnection(async (connection) => {
-      const result = await connection.getAsync(query, [id]);
+    return withConnection((connection) => {
+      const result = connection.prepare(query).get(id);
       if (!result) {
         throw new UserError("User does not exist!");
       }
@@ -109,7 +99,7 @@ export async function retrieve_user_by_id(id) {
 
 // Update user
 // Delete user
-export async function delete_user(id) {
+export function delete_user(id) {
   try {
     if (!id || typeof id !== "number") {
       throw new UserError("Valid user ID is required");
@@ -117,8 +107,8 @@ export async function delete_user(id) {
 
     const query = `DELETE FROM users WHERE id = ?`;
 
-    return await withConnection(async (connection) => {
-      const result = await connection.runAsync(query, [id]);
+    return withConnection((connection) => {
+      const result = connection.prepare(query).run(id);
       if (!result || result.changes === 0) {
         throw new UserError("Failed to delete user - no changes made");
       }
@@ -127,4 +117,7 @@ export async function delete_user(id) {
   } catch (error) {
     if (error instanceof UserError || error instanceof DatabaseError) {
       throw error;
-} }}
+    }
+    throw new UserError("Failed to delete user", error);
+  }
+}

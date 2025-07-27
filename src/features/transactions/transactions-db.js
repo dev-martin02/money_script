@@ -1,11 +1,7 @@
 // file will contain all functions which have all the interactions need it for the transactions folder
-import {
-  withConnection,
-  DatabaseError,
-  DB_connection,
-} from "../../shared/database.js";
-
-export async function add_transaction_records(transaction_values) {
+import { withConnection, getDatabase } from "../../shared/database.js";
+import { DatabaseError } from "../../utils/errors/errors.js";
+export function add_transaction_records(transaction_values) {
   try {
     const placeholders = transaction_values
       .map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
@@ -14,13 +10,13 @@ export async function add_transaction_records(transaction_values) {
 
     const query = `
       INSERT INTO transactions (
-        user_id, transaction_date, description, amount, transaction_type,
+        user_id, date, description, amount, type,
         category_id, method, notes, place
       )
       VALUES ${placeholders}
     `;
-    return await withConnection(async (connection) => {
-      const result = await connection.runAsync(query, join_transactions);
+    return withConnection((connection) => {
+      const result = connection.prepare(query).run(...join_transactions);
       return { success: true, insertedCount: result.changes };
     });
   } catch (err) {
@@ -31,7 +27,7 @@ export async function add_transaction_records(transaction_values) {
   }
 }
 
-export async function get_transactions_records(userId, page = 1, limit = 10) {
+export function get_transactions_records(userId, page = 1, limit = 10) {
   const offset = (page - 1) * limit; // rows to skip
 
   const recordsQuery = `
@@ -39,15 +35,15 @@ export async function get_transactions_records(userId, page = 1, limit = 10) {
       id,
       amount,
       place,
-      transaction_date,
+      date,
       description,
       method,
       category_id,
-      transaction_type,
+      type,
       notes
     FROM transactions
     WHERE user_id = ?
-    ORDER BY transaction_date DESC
+    ORDER BY date DESC
     LIMIT ? OFFSET ?
   `;
 
@@ -58,13 +54,11 @@ export async function get_transactions_records(userId, page = 1, limit = 10) {
   `;
 
   try {
-    return await withConnection(async (connection) => {
-      const records = await connection.allAsync(recordsQuery, [
-        userId,
-        limit,
-        offset,
-      ]);
-      const countResult = await connection.getAsync(countQuery, [userId]);
+    return withConnection((connection) => {
+      const records = connection
+        .prepare(recordsQuery)
+        .all(userId, limit, offset);
+      const countResult = connection.prepare(countQuery).get(userId);
 
       const total = countResult?.total || 0; // defensive js
       const totalPages = Math.ceil(total / limit);
@@ -90,43 +84,43 @@ export async function get_transactions_records(userId, page = 1, limit = 10) {
   }
 }
 
-export async function filter_records(userId, categoryId) {
+export function filter_records(userId, categoryId) {
   const query = `
     SELECT * FROM transactions
     WHERE user_id = ? AND category_id = ? 
   `;
-  return await withConnection(async (connection) => {
-    const result = await connection.allAsync(query, [userId, categoryId]);
+  return withConnection((connection) => {
+    const result = connection.prepare(query).all(userId, categoryId);
     return result;
   });
 }
 
 // ---------------------------- Transactions Calculations -----------------------------
 
-export async function month_summary(id) {
+export function month_summary(id) {
   try {
-    const db = await DB_connection();
-    //TODOl: FIX THIS TO BE DINAMICALLY
+    const db = getDatabase();
+    //TODO: FIX THIS TO BE DYNAMICALLY
     // Let's first verify the current month and year
     const currentDate = new Date();
-    const currentMonth = currentDate.getMonth(); // JavaScript months are 0-based
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based, add 1
     const currentYear = currentDate.getFullYear();
 
     const query = `
       SELECT 
-        COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
-        COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense
+        COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) AS total_income,
+        COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) AS total_expense
       FROM transactions
       WHERE user_id = ?
-        AND strftime('%m', transaction_date) = ?
-        AND strftime('%Y', transaction_date) = ?
+        AND strftime('%m', date) = ?
+        AND strftime('%Y', date) = ?
     `;
 
-    const result = await db.getAsync(query, [
+    const result = db.prepare(query).get(
       id,
       currentMonth.toString().padStart(2, "0"), // Ensure month is 2 digits
-      currentYear.toString(),
-    ]);
+      currentYear.toString()
+    );
 
     return result || { total_income: 0, total_expense: 0 };
   } catch (error) {
@@ -135,30 +129,32 @@ export async function month_summary(id) {
   }
 }
 
-export async function month_weekly_breakdown(id, month = null, year = null) {
+export function month_weekly_breakdown(id, month = null, year = null) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
     const query = `
       SELECT 
-        strftime('%W', transaction_date) as week_number,
-        strftime('%Y-%m-%d', transaction_date) as week_start,
-        SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) AS weekly_income,
-        SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) AS weekly_expense,
-        COUNT(CASE WHEN transaction_type = 'income' THEN 1 END) as income_count,
-        COUNT(CASE WHEN transaction_type = 'expense' THEN 1 END) as expense_count
+        strftime('%W', date) as week_number,
+        strftime('%Y-%m-%d', date) as week_start,
+        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) AS weekly_income,
+        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) AS weekly_expense,
+        COUNT(CASE WHEN type = 'income' THEN 1 END) as income_count,
+        COUNT(CASE WHEN type = 'expense' THEN 1 END) as expense_count
       FROM transactions
       WHERE user_id = ?
-        AND strftime('%m', transaction_date) = ?
-        AND strftime('%Y', transaction_date) = ?
+        AND strftime('%m', date) = ?
+        AND strftime('%Y', date) = ?
       GROUP BY week_number
       ORDER BY week_number ASC
     `;
 
     // Use provided month/year or current month/year
-    const targetMonth = month || strftime("%m", "now");
-    const targetYear = year || strftime("%Y", "now");
+    const now = new Date();
+    const targetMonth =
+      month || (now.getMonth() + 1).toString().padStart(2, "0");
+    const targetYear = year || now.getFullYear().toString();
 
-    const result = await db.allAsync(query, [id, targetMonth, targetYear]);
+    const result = db.prepare(query).all(id, targetMonth, targetYear);
 
     // Format the results to include week ranges and net amount
     return result.map((week) => ({
@@ -181,13 +177,9 @@ export async function month_weekly_breakdown(id, month = null, year = null) {
   }
 }
 
-export async function get_category_breakdown(
-  userId,
-  month = null,
-  year = null
-) {
+export function get_category_breakdown(userId, month = null, year = null) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
 
     // If month/year not provided, use current
     const now = new Date();
@@ -208,18 +200,13 @@ export async function get_category_breakdown(
       FROM categories c
       LEFT JOIN transactions t ON c.id = t.category_id AND t.user_id = ?
       WHERE c.user_id = ? 
-        AND strftime('%m', t.transaction_date) = ?
-        AND strftime('%Y', t.transaction_date) = ?
+        AND strftime('%m', t.date) = ?
+        AND strftime('%Y', t.date) = ?
       GROUP BY c.id, c.name, c.type, c.color, c.icon
       ORDER BY total_amount DESC
     `;
 
-    const rows = await db.allAsync(query, [
-      userId,
-      userId,
-      targetMonth,
-      targetYear,
-    ]);
+    const rows = db.prepare(query).all(userId, userId, targetMonth, targetYear);
 
     // Separate income and expense categories
     const breakdown = {
@@ -234,28 +221,28 @@ export async function get_category_breakdown(
   }
 }
 
-export async function get_monthly_breakdown(userId) {
+export function get_monthly_breakdown(userId) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
     const query = `
       SELECT 
-        strftime('%Y-%m', transaction_date) as month,
-        SUM(CASE WHEN transaction_type = 'income' THEN amount ELSE 0 END) as total_income,
-        SUM(CASE WHEN transaction_type = 'expense' THEN amount ELSE 0 END) as total_expense,
+        strftime('%Y-%m', date) as month,
+        SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as total_income,
+        SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as total_expense,
         SUM(CASE 
-          WHEN transaction_type = 'income' THEN amount 
-          WHEN transaction_type = 'expense' THEN -amount 
+          WHEN type = 'income' THEN amount 
+          WHEN type = 'expense' THEN -amount 
           ELSE 0 
         END) as net_amount,
-        COUNT(CASE WHEN transaction_type = 'income' THEN 1 END) as income_count,
-        COUNT(CASE WHEN transaction_type = 'expense' THEN 1 END) as expense_count
+        COUNT(CASE WHEN type = 'income' THEN 1 END) as income_count,
+        COUNT(CASE WHEN type = 'expense' THEN 1 END) as expense_count
       FROM transactions
       WHERE user_id = ?
-      GROUP BY strftime('%Y-%m', transaction_date)
+      GROUP BY strftime('%Y-%m', date)
       ORDER BY month DESC
     `;
 
-    const results = await db.allAsync(query, [userId]);
+    const results = db.prepare(query).all(userId);
 
     // Format the results to include transaction counts in a nested object
     return results.map((month) => ({

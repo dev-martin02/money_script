@@ -51,12 +51,39 @@ app.use(categories_Router);
 app.use(transactions_Router);
 app.use(auth_Router);
 
-// Error handling middleware ???
+// Global error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.statusCode || 500).json({
-    error: err.message || "Internal Server Error",
-    details: err.details,
+  // Log error for debugging
+  console.error("=== ERROR ===");
+  console.error(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.error("Error:", err.message);
+  if (err.stack) {
+    console.error("Stack:", err.stack);
+  }
+  console.error("============");
+
+  // Handle AppError (our custom errors)
+  if (err.name === "AppError" || err.isOperational) {
+    return res.status(err.statusCode || 500).json({
+      error: err.message,
+      statusCode: err.statusCode || 500,
+      details: err.details || null,
+      // Include stack trace in development
+      ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+    });
+  }
+
+  // Handle unexpected errors
+  console.error("Unexpected error:", err);
+  res.status(500).json({
+    error: "Internal Server Error",
+    statusCode: 500,
+    details: null,
+    // Show stack trace in development for debugging
+    ...(process.env.NODE_ENV !== "production" && {
+      stack: err.stack,
+      originalError: err.message,
+    }),
   });
 });
 

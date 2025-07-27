@@ -1,8 +1,9 @@
-import { DB_connection, DatabaseError } from "../../shared/database.js";
+import { getDatabase } from "../../shared/database.js";
+import { DatabaseError } from "../../utils/errors/errors.js";
 
-export async function add_category_query(categories_values) {
+export function add_category_query(categories_values) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
     const placeholders = categories_values
       .map(() => "(?, ?, ?, ?, ?, ?)")
       .join(", ");
@@ -11,7 +12,7 @@ export async function add_category_query(categories_values) {
     INSERT INTO categories (user_id, name, type, description, icon, color)
     VALUES ${placeholders}`;
 
-    const result = await db.runAsync(query, categories_values.flat());
+    const result = db.prepare(query).run(...categories_values.flat());
     return { success: true, insertedCount: result.changes };
   } catch (err) {
     if (err instanceof DatabaseError) {
@@ -21,13 +22,13 @@ export async function add_category_query(categories_values) {
   }
 }
 
-export async function get_category_query(user) {
+export function get_category_query(user) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
     const query =
       "SELECT id, name, type, description, icon, color FROM categories WHERE user_id = ?;";
 
-    const result = await db.allAsync(query, [user]);
+    const result = db.prepare(query).all(user);
     return result;
   } catch (err) {
     if (err instanceof DatabaseError) {
@@ -37,14 +38,14 @@ export async function get_category_query(user) {
   }
 }
 
-export async function update_category_query(categories_values) {
+export function update_category_query(categories_values) {
   try {
-    const db = await DB_connection();
+    const db = getDatabase();
     const query = `UPDATE categories
     SET name = ?, icon = ?, color = ?, description = ?, type = ? 
-    WHERE id = ? AND id = ?;`;
+    WHERE id = ?;`;
 
-    const result = await db.runAsync(query, categories_values);
+    const result = db.prepare(query).run(...categories_values);
     return { success: true, insertedCount: result.changes };
   } catch (err) {
     if (err instanceof DatabaseError) {
@@ -54,12 +55,12 @@ export async function update_category_query(categories_values) {
   }
 }
 
-export async function delete_category_query(category_id, category_id2) {
+export function delete_category_query(category_id) {
   try {
-    const db = await DB_connection();
-    const query = "DELETE FROM categories WHERE id = ? AND id = ?;";
+    const db = getDatabase();
+    const query = "DELETE FROM categories WHERE id = ?;";
 
-    const result = await db.runAsync(query, [category_id, category_id2]);
+    const result = db.prepare(query).run(category_id);
     return { success: true, insertedCount: result.changes };
   } catch (err) {
     if (err instanceof DatabaseError) {
